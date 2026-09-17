@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#111827">
+  <title>Production Calculator — Line 1</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="app-shell">
+    <header class="app-header">
+      <p class="eyebrow">Production Calculator</p>
+      <h1>Line 1</h1>
+      <p class="subtitle">Quick production requirement calculator. Values are calculated locally and are not saved.</p>
+    </header>
+
+    <form id="calculator" novalidate>
+      <section class="card grid two-col">
+        <label>Pack Size
+          <input id="packSize" type="number" min="0" step="any" inputmode="decimal" placeholder="25">
+        </label>
+        <label>Pack Unit
+          <select id="packUnit">
+            <option value="KS">KS — Thousand Seeds</option>
+            <option value="MS">MS — Million Seeds</option>
+            <option value="KG">KG</option>
+            <option value="LB">LB</option>
+          </select>
+        </label>
+        <label id="pcWrap">Seed Count / PC <span>(seeds/lb)</span>
+          <input id="pc" type="number" min="0" step="any" inputmode="decimal" placeholder="2500">
+        </label>
+        <label>EA — Total Packages
+          <input id="ea" type="number" min="1" step="1" inputmode="numeric" placeholder="500">
+        </label>
+      </section>
+
+      <section class="card grid two-col">
+        <label>Seed Type / Overpack
+          <select id="seedType">
+            <option value="commercial">Commercial — 1%</option>
+            <option value="parent">Parent / Basic — 0.5%</option>
+          </select>
+        </label>
+        <label>Regular Sample
+          <select id="regularSample">
+            <option value="5">5 KG — Commercial</option>
+            <option value="3">3 KG — Parent / Basic</option>
+            <option value="0">0 KG — No Sample</option>
+          </select>
+        </label>
+      </section>
+
+      <section class="card">
+        <div class="section-heading">
+          <div><h2>Custom Samples</h2><p>Optional customer samples.</p></div>
+          <button id="addSample" type="button" class="secondary">+ Add Sample</button>
+        </div>
+        <div id="sampleRows" class="sample-list"></div>
+        <p id="noSamples" class="muted">No custom samples added.</p>
+      </section>
+
+      <p id="message" class="message" role="alert" hidden></p>
+
+      <section class="card results" aria-live="polite">
+        <div class="result-top">
+          <div><p class="eyebrow">Total KG Required</p><output id="total">—</output></div>
+          <button id="reset" type="button" class="secondary">Reset</button>
+        </div>
+        <dl>
+          <div><dt>KG / EA</dt><dd id="kgEa">—</dd></div>
+          <div><dt>Base requirement</dt><dd id="baseKg">—</dd></div>
+          <div><dt>Overpack</dt><dd id="overpackKg">—</dd></div>
+          <div><dt>Regular sample</dt><dd id="regularKg">—</dd></div>
+          <div><dt>Custom samples</dt><dd id="customKg">—</dd></div>
+        </dl>
+        <p class="round-note">Final requirement always rounds <strong>up</strong> to the next whole kilogram.</p>
+      </section>
+    </form>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>
