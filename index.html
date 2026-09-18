@@ -4,18 +4,44 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#111827">
-  <title>Production Calculator — Line 1</title>
+  <meta name="color-scheme" content="light dark">
+  <title>Production Calculator</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <main class="app-shell">
     <header class="app-header">
       <p class="eyebrow">Production Calculator</p>
-      <h1>Line 1</h1>
-      <p class="subtitle">Quick production requirement calculator. Values are calculated locally and are not saved.</p>
+      <h1 id="pageTitle">Select a Line</h1>
+      <p id="pageSubtitle" class="subtitle">Choose a production line to begin. Calculations run locally and are not saved.</p>
     </header>
 
-    <form id="calculator" novalidate>
+    <section id="linePicker" class="line-grid">
+      <button type="button" class="line-card" data-line="1"><strong>Line 1</strong><span>Treat</span></button>
+      <button type="button" class="line-card" data-line="3"><strong>Line 3</strong><span>Treat / Treat &amp; Pack</span></button>
+    </section>
+
+    <section id="modePicker" class="card" hidden>
+      <button id="backToLinesFromMode" type="button" class="back-button">← Lines</button>
+      <h2>Line 3 Mode</h2>
+      <div class="mode-grid">
+        <button type="button" class="mode-card" data-mode="treat"><strong>Treat Only</strong><span>Calculate seed to treat</span></button>
+        <button type="button" class="mode-card" data-mode="pack"><strong>Treat &amp; Pack</strong><span>Seed to treat + finished bag target</span></button>
+      </div>
+    </section>
+
+    <form id="calculator" novalidate hidden>
+      <div class="toolbar">
+        <button id="backButton" type="button" class="back-button">← Lines</button>
+        <span id="modeBadge" class="badge"></span>
+      </div>
+
+      <section class="card">
+        <label>Calculation ID <span>(optional)</span>
+          <input id="calcId" type="text" maxlength="30" placeholder="Order 1" autocomplete="off">
+        </label>
+      </section>
+
       <section class="card grid two-col">
         <label>Pack Size
           <input id="packSize" type="number" min="0" step="any" inputmode="decimal" placeholder="25">
@@ -31,7 +57,7 @@
         <label id="pcWrap">Seed Count / PC <span>(seeds/lb)</span>
           <input id="pc" type="number" min="0" step="any" inputmode="decimal" placeholder="2500">
         </label>
-        <label>EA — Total Packages
+        <label>EA — Order Packages
           <input id="ea" type="number" min="1" step="1" inputmode="numeric" placeholder="500">
         </label>
       </section>
@@ -50,6 +76,26 @@
             <option value="0">0 KG — No Sample</option>
           </select>
         </label>
+        <label id="cropWrap" hidden>Crop Type
+          <select id="cropType">
+            <option value="normalCorn">Normal Corn</option>
+            <option value="shrunkenCorn">Shrunken Corn</option>
+            <option value="peas">Peas</option>
+            <option value="spinach">Spinach</option>
+            <option value="other">Other</option>
+          </select>
+        </label>
+      </section>
+
+      <section id="extraEaCard" class="card" hidden>
+        <div class="section-heading"><div><h2>Extra EA</h2><p>Packing-loss allowance. Suggested automatically; operator can adjust.</p></div></div>
+        <div class="stepper-row">
+          <button id="extraMinus" type="button" class="stepper" aria-label="Decrease Extra EA">−</button>
+          <output id="extraEa" class="stepper-value">0</output>
+          <button id="extraPlus" type="button" class="stepper" aria-label="Increase Extra EA">+</button>
+        </div>
+        <p id="extraSuggestion" class="muted">Enter Order EA to calculate a suggestion.</p>
+        <div class="ea-summary"><span>Order EA <strong id="orderEaDisplay">—</strong></span><span>Extra EA <strong id="extraEaDisplay">+0</strong></span><span>Calculated EA <strong id="calculatedEaDisplay">—</strong></span></div>
       </section>
 
       <section class="card">
@@ -65,17 +111,36 @@
 
       <section class="card results" aria-live="polite">
         <div class="result-top">
-          <div><p class="eyebrow">Total KG Required</p><output id="total">—</output></div>
+          <div>
+            <p class="eyebrow">Seed to Treat</p>
+            <output id="totalKg">—</output>
+            <p id="totalLb" class="secondary-result">—</p>
+          </div>
           <button id="reset" type="button" class="secondary">Reset</button>
         </div>
+
+        <div id="bagTarget" class="bag-target" hidden>
+          <p class="eyebrow">Finished Bag Target</p>
+          <strong id="bagKg">—</strong>
+          <span id="bagLb">—</span>
+        </div>
+
         <dl>
-          <div><dt>KG / EA</dt><dd id="kgEa">—</dd></div>
+          <div><dt>Base KG / EA</dt><dd id="kgEa">—</dd></div>
+          <div><dt>Calculated EA</dt><dd id="resultEa">—</dd></div>
           <div><dt>Base requirement</dt><dd id="baseKg">—</dd></div>
           <div><dt>Overpack</dt><dd id="overpackKg">—</dd></div>
           <div><dt>Regular sample</dt><dd id="regularKg">—</dd></div>
           <div><dt>Custom samples</dt><dd id="customKg">—</dd></div>
+          <div id="chemicalRow" hidden><dt>Chemical weight</dt><dd id="chemicalPct">—</dd></div>
         </dl>
-        <p class="round-note">Final requirement always rounds <strong>up</strong> to the next whole kilogram.</p>
+        <p class="round-note">Seed to Treat always rounds <strong>up</strong> to the next whole kilogram.</p>
+        <button id="saveCalculation" type="button" class="primary">Save Calculation</button>
+      </section>
+
+      <section id="savedSection" class="card" hidden>
+        <div class="section-heading"><div><h2>Saved Calculations</h2><p>Temporary only. Cleared when the page is refreshed or closed.</p></div><button id="clearSaved" type="button" class="secondary">Clear All</button></div>
+        <div id="savedCalculations" class="saved-list"></div>
       </section>
     </form>
   </main>
