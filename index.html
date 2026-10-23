@@ -1,149 +1,16 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#111827">
-  <meta name="color-scheme" content="light dark">
-  <title>Production Calculator</title>
-  <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-  <main class="app-shell">
-    <header class="app-header">
-      <p class="eyebrow">Production Calculator</p>
-      <h1 id="pageTitle">Select a Line</h1>
-      <p id="pageSubtitle" class="subtitle">Choose a production line to begin. Calculations run locally and are not saved.</p>
-    </header>
-
-    <section id="linePicker" class="line-grid">
-      <button type="button" class="line-card" data-line="1"><strong>Line 1</strong><span>Treat</span></button>
-      <button type="button" class="line-card" data-line="3"><strong>Line 3</strong><span>Treat / Treat &amp; Pack</span></button>
-    </section>
-
-    <section id="modePicker" class="card" hidden>
-      <button id="backToLinesFromMode" type="button" class="back-button">← Lines</button>
-      <h2>Line 3 Mode</h2>
-      <div class="mode-grid">
-        <button type="button" class="mode-card" data-mode="treat"><strong>Treat Only</strong><span>Calculate seed to treat</span></button>
-        <button type="button" class="mode-card" data-mode="pack"><strong>Treat &amp; Pack</strong><span>Seed to treat + finished bag target</span></button>
-      </div>
-    </section>
-
-    <form id="calculator" novalidate hidden>
-      <div class="toolbar">
-        <button id="backButton" type="button" class="back-button">← Lines</button>
-        <span id="modeBadge" class="badge"></span>
-      </div>
-
-      <section class="card">
-        <label>Calculation ID <span>(optional)</span>
-          <input id="calcId" type="text" maxlength="30" placeholder="Order 1" autocomplete="off">
-        </label>
-      </section>
-
-      <section class="card grid two-col">
-        <label>Pack Size
-          <input id="packSize" type="number" min="0" step="any" inputmode="decimal" placeholder="25">
-        </label>
-        <label>Pack Unit
-          <select id="packUnit">
-            <option value="KS">KS — Thousand Seeds</option>
-            <option value="MS">MS — Million Seeds</option>
-            <option value="KG">KG</option>
-            <option value="LB">LB</option>
-          </select>
-        </label>
-        <label id="pcWrap">Seed Count / PC <span>(seeds/lb)</span>
-          <input id="pc" type="number" min="0" step="any" inputmode="decimal" placeholder="2500">
-        </label>
-        <label>EA — Order Packages
-          <input id="ea" type="number" min="1" step="1" inputmode="numeric" placeholder="500">
-        </label>
-      </section>
-
-      <section class="card grid two-col">
-        <label>Seed Type / Overpack
-          <select id="seedType">
-            <option value="commercial">Commercial — 1%</option>
-            <option value="parent">Parent / Basic — 0.5%</option>
-          </select>
-        </label>
-        <label>Regular Sample
-          <select id="regularSample">
-            <option value="5">5 KG — Commercial</option>
-            <option value="3">3 KG — Parent / Basic</option>
-            <option value="0">0 KG — No Sample</option>
-          </select>
-        </label>
-        <label id="cropWrap" hidden>Crop Type
-          <select id="cropType">
-            <option value="normalCorn">Normal Corn</option>
-            <option value="shrunkenCorn">Shrunken Corn</option>
-            <option value="peas">Peas</option>
-            <option value="spinach">Spinach</option>
-            <option value="other">Other</option>
-          </select>
-        </label>
-      </section>
-
-      <section id="extraEaCard" class="card" hidden>
-        <div class="section-heading"><div><h2>Extra EA</h2><p>Packing-loss allowance. Suggested automatically; operator can adjust.</p></div></div>
-        <div class="stepper-row">
-          <button id="extraMinus" type="button" class="stepper" aria-label="Decrease Extra EA">−</button>
-          <output id="extraEa" class="stepper-value">0</output>
-          <button id="extraPlus" type="button" class="stepper" aria-label="Increase Extra EA">+</button>
-        </div>
-        <p id="extraSuggestion" class="muted">Enter Order EA to calculate a suggestion.</p>
-        <div class="ea-summary"><span>Order EA <strong id="orderEaDisplay">—</strong></span><span>Extra EA <strong id="extraEaDisplay">+0</strong></span><span>Calculated EA <strong id="calculatedEaDisplay">—</strong></span></div>
-      </section>
-
-      <section class="card">
-        <div class="section-heading">
-          <div><h2>Custom Samples</h2><p>Optional customer samples.</p></div>
-          <button id="addSample" type="button" class="secondary">+ Add Sample</button>
-        </div>
-        <div id="sampleRows" class="sample-list"></div>
-        <p id="noSamples" class="muted">No custom samples added.</p>
-      </section>
-
-      <p id="message" class="message" role="alert" hidden></p>
-
-      <section class="card results" aria-live="polite">
-        <div class="result-top">
-          <div>
-            <p class="eyebrow">Seed to Treat</p>
-            <output id="totalKg">—</output>
-            <p id="totalLb" class="secondary-result">—</p>
-          </div>
-          <button id="reset" type="button" class="secondary">Reset</button>
-        </div>
-
-        <div id="bagTarget" class="bag-target" hidden>
-          <p class="eyebrow">Finished Bag Target</p>
-          <strong id="bagKg">—</strong>
-          <span id="bagLb">—</span>
-        </div>
-
-        <dl>
-          <div><dt>Base KG / EA</dt><dd id="kgEa">—</dd></div>
-          <div><dt>Calculated EA</dt><dd id="resultEa">—</dd></div>
-          <div><dt>Base requirement</dt><dd id="baseKg">—</dd></div>
-          <div><dt>Overpack</dt><dd id="overpackKg">—</dd></div>
-          <div><dt>Regular sample</dt><dd id="regularKg">—</dd></div>
-          <div><dt>Custom samples</dt><dd id="customKg">—</dd></div>
-          <div id="chemicalRow" hidden><dt>Chemical weight</dt><dd id="chemicalPct">—</dd></div>
-        </dl>
-        <p class="round-note">Seed to Treat always rounds <strong>up</strong> to the next whole kilogram.</p>
-        <button id="saveCalculation" type="button" class="primary">Save Calculation</button>
-      </section>
-
-      <section id="savedSection" class="card" hidden>
-        <div class="section-heading"><div><h2>Saved Calculations</h2><p>Temporary only. Cleared when the page is refreshed or closed.</p></div><button id="clearSaved" type="button" class="secondary">Clear All</button></div>
-        <div id="savedCalculations" class="saved-list"></div>
-      </section>
-    </form>
-  </main>
-  <script src="app.js"></script>
-</body>
-</html>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0b1220"><title>Production Calculator v2.2</title><link rel="stylesheet" href="styles.css"></head><body><main class="app">
+<header><div class="eyebrow">PRODUCTION CALCULATOR <span class="version">v2.2</span></div><div class="headerline"><div><h1 id="title">Select a Line</h1><p id="subtitle" class="muted">Choose a production line.</p></div><button id="settingsBtn" class="secondary small" hidden>⚙️ Settings</button></div></header>
+<section id="home" class="lines"><button data-line="1">Line 1 <small>Treat Only</small></button><button data-line="3">Line 3 <small>Treat / Treat &amp; Pack</small></button><button data-line="4">Line 4 <small>Treat / Treat &amp; Pack</small></button><button data-line="standalone">Stand Alone <small>Pack Only</small></button><button data-line="bulk">Bulk Line <small>Coming Soon 🚧</small></button></section>
+<section id="coming" class="card center" hidden><div class="bigemoji">🚧🌱</div><h2>Bulk Line — Coming Soon!</h2><p>Our calculator is still under construction.</p><p class="muted">The seeds are ready... the math is still growing! 😄</p><button class="primary" id="comingBack">← Back to Lines</button></section>
+<section id="modeScreen" class="card" hidden><button class="link" id="modeBack">← Lines</button><h2>Choose a mode</h2><div class="lines"><button data-mode="treat">Treat Only <small>Seed to Treat</small></button><button data-mode="pack">Treat &amp; Pack <small>Seed to Treat + Bag Target</small></button></div></section>
+<section id="calc" hidden><div class="toprow"><button class="link" id="back">← Back</button><span class="pill" id="modeLabel"></span></div>
+<div class="card"><div class="grid"><label id="cropField">Crop Type<select id="crop"></select></label><label>Seed Type<select id="seedType"><option value="commercial">Commercial</option><option value="parent">Parent / Basic</option></select></label><label id="conditionField" hidden>Seed Condition<select id="condition"><option value="treated">Treated</option><option value="untreated">Untreated</option></select></label><label>Pack Size<div class="inline"><input id="packSize" type="number" min="0" step="any" placeholder="100" inputmode="decimal"><select id="packUnit" aria-label="Pack unit"><option>KS</option><option>MS</option><option>KG</option><option>LB</option></select></div></label><label>Order EA<input id="ea" type="number" min="1" step="1" placeholder="300" inputmode="numeric"></label><label id="pcField">PC (Seeds/LB)<input id="pc" type="number" min="1" step="any" placeholder="4500" inputmode="decimal"></label><label id="tareField" hidden>Bag Tare Weight<div class="inline"><input id="tare" type="number" min="0" step="0.001" value="0.035" inputmode="decimal"><select id="tareUnit"><option>KG</option><option>LB</option></select></div></label></div><p class="muted tiny" id="rates"></p></div>
+<div id="extraPanel" class="card" hidden><div class="extra"><strong>Extra EA</strong><button class="secondary square" id="extraMinus">−</button><input id="extra" type="number" min="0" step="1" value="0" aria-label="Extra EA"><button class="secondary square" id="extraPlus">+</button><span class="muted tiny" id="extraSuggested"></span></div><p class="muted tiny" id="eaSummary"></p></div>
+<div class="card"><div class="sectionhead"><strong>Samples</strong><button class="secondary small" id="samplesToggle">Edit ▾</button></div><div id="samplesBody" hidden><label>Regular Sample<select id="regular"><option value="auto">Auto (5 KG Commercial / 3 KG Parent/Basic)</option><option value="none">None</option><option value="5">5 KG</option><option value="3">3 KG</option></select></label><div id="sampleRows"></div><button id="addSample" class="secondary small">+ Add Custom Sample</button></div><p class="muted tiny" id="sampleSummary"></p></div>
+<p id="error" class="error" hidden></p>
+<div id="bagResults" class="twocards" hidden><div class="card mini"><strong id="bagHeading">Finished Bag Target</strong><div class="number" id="bagKg">—</div><div class="muted" id="bagLb">—</div></div><div class="card mini" id="secondBag"><strong id="secondHeading">Calculated EA</strong><div class="number" id="secondKg">—</div><div class="muted" id="secondLb">—</div></div></div>
+<div class="card result"><h2 id="resultHeading">Seed to Treat</h2><p class="muted tiny" id="resultContext"></p><div class="resultgrid"><div><span class="tiny muted">KILOGRAMS</span><div class="huge" id="totalKg">—</div></div><div><span class="tiny muted">POUNDS</span><div class="huge" id="totalLb">—</div></div></div><details><summary>Calculation Breakdown</summary><div id="breakdown"></div></details></div>
+<div class="card"><div class="saveRow"><input id="calcId" type="text" maxlength="50" placeholder="Calculation ID (optional)"><button class="primary" id="save">💾 Save</button></div><button class="secondary small" id="reset">Reset Inputs</button></div></section>
+<section id="settings" class="card" hidden><div class="sectionhead"><h2>⚙️ Formula Settings</h2><button id="closeSettings" class="secondary small">Close</button></div><p class="muted tiny">Settings are saved on this device only. Changing them will not alter past saved calculations.</p><div class="grid"><label>Crop<select id="settingCrop"></select></label><label>Seed Type<select id="settingSeed"><option value="commercial">Commercial</option><option value="parent">Parent / Basic</option></select></label><label>Overpack %<input id="settingOver" type="number" min="0" max="100" step="any"></label><label>Chemical Weight %<input id="settingChem" type="number" min="0" max="100" step="any"></label></div><p class="muted tiny" id="settingNote"></p><div class="actions"><button id="applySettings" class="primary">Apply Changes</button><button id="restoreSettings" class="secondary">Restore Defaults</button></div></section>
+<section id="saved" class="card" hidden><div class="sectionhead"><h2>Saved Calculations</h2><span class="muted tiny" id="savedCount"></span></div><p class="muted tiny">Saved on this browser/device. Not synchronized between devices.</p><div id="savedList"></div></section>
+<footer>Production Calculator · Local calculations · v2.2</footer></main><script src="app.js"></script></body></html>

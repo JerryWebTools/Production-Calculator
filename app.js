@@ -1,174 +1,47 @@
-(() => {
-  const $ = id => document.getElementById(id);
-  const KG_TO_LB = 2.2046;
-  let activeLine = null;
-  let activeMode = null;
-  let extraEaValue = 0;
-  let extraEaManuallyAdjusted = false;
-  let saveCounter = 0;
-
-  const packSize=$('packSize'), packUnit=$('packUnit'), pc=$('pc'), pcWrap=$('pcWrap'), ea=$('ea');
-  const seedType=$('seedType'), regularSample=$('regularSample'), cropType=$('cropType');
-  const rows=$('sampleRows'), noSamples=$('noSamples'), message=$('message');
-  const num=el=>Number(el.value);
-  const positive=el=>el.value!==''&&Number.isFinite(num(el))&&num(el)>0;
-
-  function show(el, visible=true){ el.hidden=!visible; }
-  function clearResults(){
-    ['totalKg','totalLb','kgEa','resultEa','baseKg','overpackKg','regularKg','customKg','bagKg','bagLb','chemicalPct'].forEach(id=>$(id).textContent='—');
-  }
-  function kgFrom(weight,unit,seedPC){
-    if(unit==='KG')return weight;
-    if(unit==='G')return weight/1000;
-    if(unit==='LB')return weight/KG_TO_LB;
-    if(unit==='KS')return ((weight*1000)/seedPC)/KG_TO_LB;
-    return 0;
-  }
-  function baseKgPerEa(){
-    if(!positive(packSize)) return NaN;
-    const size=num(packSize), count=num(pc);
-    if(packUnit.value==='KG') return size;
-    if(packUnit.value==='LB') return size/KG_TO_LB;
-    if(!positive(pc)) return NaN;
-    if(packUnit.value==='KS') return ((size*1000)/count)/KG_TO_LB;
-    if(packUnit.value==='MS') return ((size*1000000)/count)/KG_TO_LB;
-    return NaN;
-  }
-  function overpackRate(){
-    if(activeLine===3 && activeMode==='pack' && cropType.value==='spinach') return 0.005;
-    return seedType.value==='commercial' ? 0.01 : 0.005;
-  }
-  function chemicalRate(){
-    if(activeLine!==3 || activeMode!=='pack') return 0;
-    if(cropType.value==='normalCorn') return 0.01;
-    if(cropType.value==='shrunkenCorn') return 0.012;
-    return 0;
-  }
-  function suggestedExtra(orderEa){
-    if(!Number.isFinite(orderEa) || orderEa<=0) return 0;
-    return 1 + Math.ceil(orderEa/100);
-  }
-  function updateExtraSuggestion(force=false){
-    if(activeLine!==3 || activeMode!=='pack') return;
-    const order=positive(ea)?Math.floor(num(ea)):0;
-    const suggestion=suggestedExtra(order);
-    if(force || !extraEaManuallyAdjusted) extraEaValue=suggestion;
-    $('extraEa').textContent=extraEaValue;
-    $('extraSuggestion').textContent=order ? `Suggested: ${suggestion} Extra EA based on ${order} Order EA.` : 'Enter Order EA to calculate a suggestion.';
-    $('orderEaDisplay').textContent=order||'—';
-    $('extraEaDisplay').textContent='+'+extraEaValue;
-    $('calculatedEaDisplay').textContent=order?order+extraEaValue:'—';
-  }
-  function updatePC(){
-    const needed=['KS','MS'].includes(packUnit.value)||[...rows.querySelectorAll('.sample-unit')].some(x=>x.value==='KS');
-    pcWrap.hidden=!needed;
-  }
-  function addSample(){
-    if(rows.children.length>=10)return;
-    const row=document.createElement('div');
-    row.className='sample-row';
-    row.innerHTML=`<label>Quantity<input class="sample-qty" type="number" min="1" step="1" inputmode="numeric" placeholder="6"></label><label>Weight each<input class="sample-weight" type="number" min="0" step="any" inputmode="decimal" placeholder="1"></label><label>Unit<select class="sample-unit"><option>KG</option><option>G</option><option>LB</option><option>KS</option></select></label><button type="button" class="secondary remove">Remove</button>`;
-    rows.appendChild(row); noSamples.hidden=true;
-    row.querySelector('.remove').addEventListener('click',()=>{row.remove();noSamples.hidden=rows.children.length>0;updatePC();calculate()});
-    row.querySelectorAll('input,select').forEach(x=>x.addEventListener('input',()=>{updatePC();calculate()}));
-    calculate();
-  }
-  function customSamplesKg(seedPC){
-    let custom=0, invalid=false;
-    rows.querySelectorAll('.sample-row').forEach(row=>{
-      const q=row.querySelector('.sample-qty'), w=row.querySelector('.sample-weight'), u=row.querySelector('.sample-unit').value;
-      if(q.value===''&&w.value==='')return;
-      if(!positive(q)||!positive(w)){invalid=true;return;}
-      custom+=num(q)*kgFrom(num(w),u,seedPC);
-    });
-    return {custom,invalid};
-  }
-  function calculate(){
-    message.hidden=true; updatePC();
-    if(activeLine===3 && activeMode==='pack') updateExtraSuggestion();
-    if(!positive(packSize)||!positive(ea)){clearResults();return null;}
-    if(!pcWrap.hidden&&!positive(pc)){clearResults();message.textContent='Enter a valid Seed Count / PC to calculate seed-based quantities.';message.hidden=false;return null;}
-    const kgEA=baseKgPerEa();
-    if(!Number.isFinite(kgEA)||kgEA<=0){clearResults();return null;}
-    const orderEa=Math.floor(num(ea));
-    const calcEa=orderEa + ((activeLine===3&&activeMode==='pack')?extraEaValue:0);
-    const rate=overpackRate();
-    const base=kgEA*calcEa;
-    const overpack=base*rate;
-    const regular=Number(regularSample.value);
-    const {custom,invalid}=customSamplesKg(num(pc));
-    if(invalid){message.textContent='Complete Quantity and Weight for each custom sample, or remove the unused row.';message.hidden=false;}
-    const raw=base+overpack+regular+custom;
-    const roundedKg=Math.ceil(raw);
-    const roundedLb=roundedKg*KG_TO_LB;
-    const chem=chemicalRate();
-    const bagTargetKg=kgEA*(1+rate)*(1+chem);
-    const bagTargetLb=bagTargetKg*KG_TO_LB;
-
-    $('kgEa').textContent=kgEA.toFixed(3)+' KG / '+(kgEA*KG_TO_LB).toFixed(2)+' LB';
-    $('resultEa').textContent=calcEa.toLocaleString();
-    $('baseKg').textContent=base.toFixed(3)+' KG / '+(base*KG_TO_LB).toFixed(2)+' LB';
-    $('overpackKg').textContent=overpack.toFixed(3)+' KG / '+(overpack*KG_TO_LB).toFixed(2)+' LB';
-    $('regularKg').textContent=regular.toFixed(3)+' KG / '+(regular*KG_TO_LB).toFixed(2)+' LB';
-    $('customKg').textContent=custom.toFixed(3)+' KG / '+(custom*KG_TO_LB).toFixed(2)+' LB';
-    $('totalKg').textContent=roundedKg.toLocaleString()+' KG';
-    $('totalLb').textContent=roundedLb.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})+' LB';
-    if(activeLine===3&&activeMode==='pack'){
-      $('bagKg').textContent=bagTargetKg.toFixed(3)+' KG';
-      $('bagLb').textContent=bagTargetLb.toFixed(2)+' LB';
-      $('chemicalPct').textContent=(chem*100).toFixed(chem===0.012?1:0)+'%';
-    }
-    return {kgEA,orderEa,calcEa,rate,base,overpack,regular,custom,roundedKg,roundedLb,chem,bagTargetKg,bagTargetLb};
-  }
-  function resetCalculator(){
-    $('calcId').value=''; packSize.value=''; packUnit.value='KS'; pc.value=''; ea.value=''; seedType.value='commercial'; regularSample.value='5'; cropType.value='normalCorn';
-    rows.innerHTML=''; noSamples.hidden=false; message.hidden=true; extraEaValue=0; extraEaManuallyAdjusted=false; updatePC(); updateExtraSuggestion(true); clearResults(); packSize.focus();
-  }
-  function openLine(line){
-    activeLine=line;
-    show($('linePicker'),false);
-    if(line===3){
-      $('pageTitle').textContent='Line 3'; $('pageSubtitle').textContent='Choose a calculation mode.'; show($('modePicker'),true); show($('calculator'),false);
-    } else { openCalculator(1,'treat'); }
-  }
-  function openCalculator(line,mode){
-    activeLine=line; activeMode=mode; show($('linePicker'),false); show($('modePicker'),false); show($('calculator'),true);
-    $('pageTitle').textContent=`Line ${line}`;
-    $('pageSubtitle').textContent=mode==='pack'?'Treat & Pack production calculator.':'Treat-only production calculator.';
-    $('modeBadge').textContent=mode==='pack'?'Treat & Pack':'Treat Only';
-    show($('cropWrap'),line===3&&mode==='pack'); show($('extraEaCard'),line===3&&mode==='pack'); show($('bagTarget'),line===3&&mode==='pack'); show($('chemicalRow'),line===3&&mode==='pack');
-    $('backButton').textContent=line===3?'← Line 3 Modes':'← Lines';
-    resetCalculator(); calculate();
-  }
-  function goBack(){
-    show($('calculator'),false);
-    if(activeLine===3){show($('modePicker'),true);$('pageTitle').textContent='Line 3';$('pageSubtitle').textContent='Choose a calculation mode.';}
-    else showLines();
-  }
-  function showLines(){
-    activeLine=null; activeMode=null; show($('calculator'),false); show($('modePicker'),false); show($('linePicker'),true); $('pageTitle').textContent='Select a Line'; $('pageSubtitle').textContent='Choose a production line to begin. Calculations run locally and are not saved.';
-  }
-  function saveCalculation(){
-    const r=calculate(); if(!r || !Number.isFinite(r.roundedKg)) return;
-    saveCounter++;
-    const id=$('calcId').value.trim()||`Calculation ${saveCounter}`;
-    const card=document.createElement('article'); card.className='saved-item';
-    const modeText=activeLine===3&&activeMode==='pack'?'Treat & Pack':'Treat Only';
-    const bag=activeLine===3&&activeMode==='pack'?`<div><span>Finished Bag Target</span><strong>${r.bagTargetKg.toFixed(3)} KG / ${r.bagTargetLb.toFixed(2)} LB</strong></div>`:'';
-    card.innerHTML=`<div class="saved-title"><strong>${escapeHtml(id)}</strong><span>Line ${activeLine} · ${modeText}</span></div><div><span>Pack</span><strong>${escapeHtml(packSize.value)} ${packUnit.value} · ${r.orderEa} EA${r.calcEa!==r.orderEa?` + ${r.calcEa-r.orderEa} Extra`:''}</strong></div><div><span>Seed to Treat</span><strong>${r.roundedKg.toLocaleString()} KG / ${r.roundedLb.toFixed(2)} LB</strong></div>${bag}`;
-    $('savedCalculations').appendChild(card); show($('savedSection'),true);
-  }
-  function escapeHtml(s){return s.replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));}
-
-  document.querySelectorAll('[data-line]').forEach(b=>b.addEventListener('click',()=>openLine(Number(b.dataset.line))));
-  document.querySelectorAll('[data-mode]').forEach(b=>b.addEventListener('click',()=>openCalculator(3,b.dataset.mode)));
-  $('backToLinesFromMode').addEventListener('click',showLines); $('backButton').addEventListener('click',goBack);
-  $('addSample').addEventListener('click',addSample); $('reset').addEventListener('click',resetCalculator);
-  [packSize,packUnit,pc,seedType,regularSample,cropType].forEach(x=>x.addEventListener('input',calculate));
-  ea.addEventListener('input',()=>{extraEaManuallyAdjusted=false;updateExtraSuggestion(true);calculate();});
-  $('extraMinus').addEventListener('click',()=>{extraEaManuallyAdjusted=true;extraEaValue=Math.max(0,extraEaValue-1);updateExtraSuggestion();calculate();});
-  $('extraPlus').addEventListener('click',()=>{extraEaManuallyAdjusted=true;extraEaValue+=1;updateExtraSuggestion();calculate();});
-  $('saveCalculation').addEventListener('click',saveCalculation);
-  $('clearSaved').addEventListener('click',()=>{$('savedCalculations').innerHTML='';show($('savedSection'),false);saveCounter=0;});
-  updatePC(); showLines();
+(()=>{'use strict';
+const $=id=>document.getElementById(id), F=2.2046, SETTINGS_KEY='production-calculator-v22-settings', SAVED_KEY='production-calculator-v22-saved';
+const CROPS={1:['normalCorn','shrunkenCorn','peas','beans','spinach','other'],3:['normalCorn','shrunkenCorn','peas','spinach','other'],4:['peas','beans'],standalone:['normalCorn','shrunkenCorn','peas','beans','spinach','other']};
+const NAMES={normalCorn:'Normal Corn',shrunkenCorn:'Shrunken Corn',peas:'Peas',beans:'Beans',spinach:'Spinach',other:'Other'};
+const read=(key,fallback)=>{try{const x=JSON.parse(localStorage.getItem(key));return x&&typeof x==='object'?x:fallback}catch{return fallback}};
+let overrides=read(SETTINGS_KEY,{}),saved=Array.isArray(read(SAVED_KEY,[]))?read(SAVED_KEY,[]):[],line=null,mode=null,extraManual=false,settingReturn='calc',lastResult=null;
+const fmt=(x,d)=>Number(x).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});
+const esc=x=>String(x).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const validPositive=x=>Number.isFinite(x)&&x>0;
+const persist=(key,obj)=>{try{localStorage.setItem(key,JSON.stringify(obj));return true}catch{alert('Unable to save on this device. Check browser storage settings.');return false}};
+function show(view){['home','modeScreen','coming','calc','settings','saved'].forEach(id=>$(id).hidden=id!==view);$('settingsBtn').hidden=!(view==='calc');}
+function title(name,sub){$('title').textContent=name;$('subtitle').textContent=sub;}
+function home(){line=null;mode=null;show('home');title('Select a Line','Choose a production line.');}
+function openLine(v){line=v;if(v==='bulk'){show('coming');title('Bulk Line','Work in progress');return;}if(v==='3'||v==='4'){show('modeScreen');title('Line '+v,'Choose a calculation mode.');return;}openCalc(v==='1'?'treat':'standalone');}
+function cropOptions(select,items){select.innerHTML=items.map(c=>`<option value="${c}">${NAMES[c]}</option>`).join('');}
+function defaults(l,c,s){return {over:(c==='spinach'&&(l==='3'||l==='standalone')?0.5:s==='commercial'?1:0.5),chem:(l==='3'||l==='standalone')?(c==='normalCorn'?1:c==='shrunkenCorn'?1.2:0):0};}
+function settingKey(l,c,s){return `${l}|${c}|${s}`;}
+function rates(l,c,s){return {...defaults(l,c,s),...(overrides[settingKey(l,c,s)]||{})};}
+function openCalc(m){mode=m;show('calc');title(line==='standalone'?'Stand Alone':'Line '+line,line==='standalone'?'Pack Only':m==='pack'?'Treat & Pack':'Treat Only');$('modeLabel').textContent=line==='standalone'?'Pack Only':m==='pack'?'Treat & Pack':'Treat Only';$('cropField').hidden=line==='1'||((line==='3'||line==='4')&&mode==='treat');$('conditionField').hidden=line!=='standalone';$('tareField').hidden=line!=='standalone';$('extraPanel').hidden=!(mode==='pack'&&(line==='3'||line==='4'));$('bagResults').hidden=!(line==='standalone'||mode==='pack');$('resultHeading').textContent=line==='standalone'?'Total Seed Required':'Seed to Treat';$('bagHeading').textContent=line==='standalone'?'Net Seed / Bag':'Finished Bag Target';$('secondHeading').textContent=line==='standalone'?'Scale Target / Bag':'Calculated EA';cropOptions($('crop'),CROPS[line]);reset();renderSaved();}
+function reset(){ $('crop').value=CROPS[line][0];$('seedType').value='commercial';$('condition').value='treated';$('packSize').value='';$('packUnit').value='KS';$('ea').value='';$('pc').value='';$('tare').value='0.035';$('tareUnit').value='KG';$('regular').value='auto';$('calcId').value='';$('sampleRows').innerHTML='';$('samplesBody').hidden=true;$('samplesToggle').textContent='Edit ▾';extraManual=false;$('extra').value='0';calculate();}
+function back(){if(line==='3'||line==='4'){show('modeScreen');title('Line '+line,'Choose a calculation mode.');}else home();}
+function unitKg(w,u,pc){if(u==='KG')return w;if(u==='G')return w/1000;if(u==='LB')return w/F;if(u==='KS')return w*1000/pc/F;if(u==='MS')return w*1000000/pc/F;return NaN;}
+function sampleRows(){return [...document.querySelectorAll('.sample-row')].map(el=>({qty:el.querySelector('.sampleQty').value,weight:el.querySelector('.sampleWeight').value,unit:el.querySelector('.sampleUnit').value}));}
+function addSample(row={qty:'1',weight:'',unit:'KG'}){if($('sampleRows').children.length>=20)return;const div=document.createElement('div');div.className='sample-row';div.innerHTML=`<label>Quantity<input class="sampleQty" type="number" min="1" step="1" value="${esc(row.qty)}"></label><label>Weight each<input class="sampleWeight" type="number" min="0" step="any" value="${esc(row.weight)}"></label><label>Unit<select class="sampleUnit">${['KG','G','LB','KS'].map(u=>`<option ${row.unit===u?'selected':''}>${u}</option>`).join('')}</select></label><button class="secondary removeSample" type="button" aria-label="Remove sample">✕</button>`;$('sampleRows').append(div);div.querySelector('.removeSample').onclick=()=>{div.remove();calculate();};div.querySelectorAll('input,select').forEach(el=>el.addEventListener('input',calculate));calculate();}
+function updateExtra(){if($('extraPanel').hidden)return;const ea=Number($('ea').value),suggested=validPositive(ea)?1+Math.ceil(ea/100):0;if(!extraManual)$('extra').value=String(suggested);$('extraSuggested').textContent=`Suggested: +${suggested} EA`;$('eaSummary').textContent=`Calculated EA: ${validPositive(ea)?Math.floor(ea)+Math.max(0,Number($('extra').value)||0):'—'}`;}
+function calculate(){lastResult=null;$('error').hidden=true;const size=Number($('packSize').value),order=Number($('ea').value),pc=Number($('pc').value),unit=$('packUnit').value,seed=$('seedType').value,crop=$('crop').value,condition=$('condition').value;const countPack=['KS','MS'].includes(unit),sampleUsesPC=sampleRows().some(r=>r.unit==='KS'&&r.weight!==''&&r.qty!=='');$('pcField').hidden=!(countPack||sampleUsesPC);updateExtra();const r=rates(line,crop,seed),chem=line==='standalone'?(condition==='treated'?r.chem:0):(mode==='pack'?r.chem:0),over=r.over;$('rates').textContent=`Overpack: ${over}% · Chemical Weight: ${chem}%${overrides[settingKey(line,crop,seed)]?' · Modified Settings':''}`;$('rates').classList.toggle('settingmodified',!!overrides[settingKey(line,crop,seed)]);const reg=$('regular').value==='auto'?(seed==='commercial'?5:3):$('regular').value==='none'?0:Number($('regular').value);let custom=0,invalidSample=false;for(const s of sampleRows()){if(s.qty===''&&s.weight==='')continue;const q=Number(s.qty),w=Number(s.weight);if(!Number.isInteger(q)||q<=0||!validPositive(w)||(s.unit==='KS'&&!validPositive(pc))){invalidSample=true;continue;}custom+=q*unitKg(w,s.unit,pc);}const samples=reg+custom;$('sampleSummary').textContent=`Samples: ${fmt(samples,3)} KG · ${fmt(samples*F,2)} LB`;
+const valid=validPositive(size)&&Number.isInteger(order)&&order>0&&(!countPack||validPositive(pc))&&(!sampleUsesPC||validPositive(pc))&&!invalidSample&&(line!=='standalone'||(Number($('tare').value)>=0&&$('tare').value!==''));if(!valid){$('totalKg').textContent='—';$('totalLb').textContent='—';$('bagKg').textContent='—';$('bagLb').textContent='—';$('secondKg').textContent='—';$('secondLb').textContent='—';$('breakdown').innerHTML='';$('resultContext').textContent='Enter order details to calculate.';if(invalidSample){$('error').textContent='Complete or remove invalid custom sample rows.';$('error').hidden=false;}return;}
+const base=unitKg(size,unit,pc),extra=$('extraPanel').hidden?0:Number($('extra').value),calcEa=order+extra;if(!Number.isInteger(extra)||extra<0){$('error').textContent='Extra EA must be a whole number of zero or greater.';$('error').hidden=false;return;}
+const netBag=base*(1+over/100)*(1+chem/100),tareKg=line==='standalone'?unitKg(Number($('tare').value),$('tareUnit').value,pc):0,scaleBag=netBag+tareKg;const seedBase=base*calcEa,overKg=seedBase*over/100,raw=line==='standalone'?netBag*order+samples:seedBase+overKg+samples;const totalKg=Math.ceil(raw),totalLb=totalKg*F;$('totalKg').textContent=fmt(totalKg,0)+' KG';$('totalLb').textContent=fmt(totalLb,2)+' LB';$('resultContext').textContent=`${calcEa} EA · ${fmt(samples,3)} KG samples included`;
+if(line==='standalone'){$('bagKg').textContent=fmt(netBag,3)+' KG';$('bagLb').textContent=fmt(netBag*F,2)+' LB';$('secondKg').textContent=fmt(scaleBag,3)+' KG';$('secondLb').textContent=fmt(scaleBag*F,2)+' LB';}else if(mode==='pack'){$('bagKg').textContent=fmt(netBag,3)+' KG';$('bagLb').textContent=fmt(netBag*F,2)+' LB';$('secondKg').textContent=fmt(calcEa,0)+' EA';$('secondLb').textContent=`Order ${order} + Extra ${extra}`;}
+const breakdown=[['Base KG / EA',fmt(base,3)+' KG / '+fmt(base*F,2)+' LB'],['Order EA',String(order)],['Extra EA',String(extra)],['Calculated EA',String(calcEa)],['Overpack',over+'%'],['Chemical Weight',chem+'%'],['Regular Sample',fmt(reg,3)+' KG'],['Custom Samples',fmt(custom,3)+' KG']];if(line==='standalone'){breakdown.push(['Bag Tare',fmt(tareKg,3)+' KG / '+fmt(tareKg*F,3)+' LB'],['Net Seed / Bag',fmt(netBag,3)+' KG / '+fmt(netBag*F,2)+' LB'],['Scale Target / Bag',fmt(scaleBag,3)+' KG / '+fmt(scaleBag*F,2)+' LB']);}else{breakdown.push(['Base requirement',fmt(seedBase,3)+' KG'],['Overpack weight',fmt(overKg,3)+' KG']);if(mode==='pack')breakdown.push(['Finished Bag Target',fmt(netBag,3)+' KG / '+fmt(netBag*F,2)+' LB']);}breakdown.push(['Final rounded total',fmt(totalKg,0)+' KG / '+fmt(totalLb,2)+' LB']);$('breakdown').innerHTML=breakdown.map(([a,b])=>`<div class="detailrow"><span>${esc(a)}</span><strong>${esc(b)}</strong></div>`).join('');lastResult={line,mode,crop,seed,condition,packSize:size,packUnit:unit,pc:countPack||sampleUsesPC?pc:null,orderEa:order,extraEa:extra,calculatedEa:calcEa,over,chem,regular:reg,regularSelection:$('regular').value,customSamples:sampleRows(),tareKg,netBag,scaleBag,base,seedBase,overKg,totalKg,totalLb,samples,bagKg:netBag,bagLb:netBag*F};}
+function capture(){calculate();if(!lastResult){alert('Enter a valid calculation before saving.');return;}const r=structuredClone(lastResult);r.id=(typeof crypto!=='undefined'&&crypto.randomUUID)?crypto.randomUUID():String(Date.now())+String(Math.random());r.label=$('calcId').value.trim()||`Calculation ${saved.length+1}`;r.savedAt=new Date().toISOString();saved.unshift(r);if(persist(SAVED_KEY,saved))renderSaved();}
+function row(a,b){return `<div class="detailrow"><span>${esc(a)}</span><strong>${esc(b)}</strong></div>`;}
+function savedCard(r){const kind=r.line==='standalone'?'Stand Alone':`Line ${r.line}`,description=r.line==='standalone'?'Pack Only':r.mode==='pack'?'Treat & Pack':'Treat Only',total=r.totalKg;let fields=[['Saved',new Date(r.savedAt).toLocaleString()],['Line / Mode',kind+' · '+description],['Crop',NAMES[r.crop]||'N/A'],['Seed Type',r.seed==='commercial'?'Commercial':'Parent / Basic']];if(r.line==='standalone')fields.push(['Seed Condition',r.condition==='treated'?'Treated':'Untreated']);fields.push(['Pack Size',r.packSize+' '+r.packUnit],['Order EA',r.orderEa],['PC (Seeds/LB)',r.pc??'N/A'],['Extra EA',r.extraEa],['Calculated EA',r.calculatedEa],['Overpack',r.over+'%'],['Chemical Weight',r.chem+'%'],['Regular Sample',fmt(r.regular,3)+' KG'],['Custom Samples',r.customSamples.length? r.customSamples.map(s=>`${s.qty} × ${s.weight} ${s.unit}`).join('; '):'None'],['Total Samples',fmt(r.samples,3)+' KG / '+fmt(r.samples*F,2)+' LB']);if(r.line==='standalone')fields.push(['Bag Tare',fmt(r.tareKg,3)+' KG / '+fmt(r.tareKg*F,3)+' LB'],['Net Seed / Bag',fmt(r.netBag,3)+' KG / '+fmt(r.netBag*F,2)+' LB'],['Scale Target / Bag',fmt(r.scaleBag,3)+' KG / '+fmt(r.scaleBag*F,2)+' LB']);else fields.push(['Base KG / EA',fmt(r.base,3)+' KG / '+fmt(r.base*F,2)+' LB'],['Base Requirement',fmt(r.seedBase,3)+' KG'],['Overpack Weight',fmt(r.overKg,3)+' KG']);if(r.mode==='pack'&&r.line!=='standalone')fields.push(['Finished Bag Target',fmt(r.bagKg,3)+' KG / '+fmt(r.bagLb,2)+' LB']);fields.push(['Total',fmt(r.totalKg,0)+' KG / '+fmt(r.totalLb,2)+' LB']);return `<article class="savedItem"><div class="savedHead"><div><strong>${esc(r.label)}</strong><div class="muted tiny">${esc(kind)} · ${esc(description)}</div><div class="muted tiny">${esc(NAMES[r.crop]||'')} · ${esc(r.packSize+' '+r.packUnit)} · ${r.orderEa} EA</div></div><div class="right"><strong>${fmt(total,0)} KG</strong><div class="muted tiny">${fmt(r.totalLb,2)} LB</div></div></div><details><summary>View Details</summary>${fields.map(([a,b])=>row(a,b)).join('')}</details><div class="actions"><button class="secondary small load" data-id="${esc(r.id)}">↩ Load Calculation</button><button class="secondary small danger delete" data-id="${esc(r.id)}">Delete</button></div></article>`;}
+function renderSaved(){const relevant=saved.filter(r=>r.line===line);$('saved').hidden=!relevant.length||!line||line==='bulk';$('savedCount').textContent=`${relevant.length} Saved`;$('savedList').innerHTML=relevant.map(savedCard).join('');$('savedList').querySelectorAll('.delete').forEach(b=>b.onclick=()=>{if(confirm('Delete this saved calculation?')){saved=saved.filter(r=>r.id!==b.dataset.id);persist(SAVED_KEY,saved);renderSaved();}});$('savedList').querySelectorAll('.load').forEach(b=>b.onclick=()=>{const r=saved.find(x=>x.id===b.dataset.id);if(r)load(r);});}
+function load(r){line=r.line;openCalc(r.mode);$('crop').value=r.crop;$('seedType').value=r.seed;$('condition').value=r.condition||'treated';$('packSize').value=r.packSize;$('packUnit').value=r.packUnit;$('pc').value=r.pc??'';$('ea').value=r.orderEa;$('regular').value=r.regularSelection||String(r.regular);$('calcId').value=r.label;$('sampleRows').innerHTML='';(r.customSamples||[]).forEach(addSample);if(line==='standalone'){$('tare').value=fmt(r.tareKg,3).replace(/,/g,'');$('tareUnit').value='KG';}else if(r.mode==='pack'){$('extra').value=r.extraEa;extraManual=true;}calculate();window.scrollTo({top:0,behavior:'smooth'});}
+function settingsFor(){const c=$('settingCrop').value,s=$('settingSeed').value,r=rates(line,c,s);$('settingOver').value=r.over;$('settingChem').value=r.chem;$('settingNote').textContent=`Editing ${NAMES[c]} · ${s==='commercial'?'Commercial':'Parent / Basic'}${overrides[settingKey(line,c,s)]?' · Modified Settings':''}`;}
+function openSettings(){settingReturn='calc';show('settings');title('Formula Settings',line==='standalone'?'Stand Alone':'Line '+line);cropOptions($('settingCrop'),CROPS[line]);$('settingCrop').value=$('crop').value;$('settingSeed').value=$('seedType').value;settingsFor();}
+function saveSettings(){const over=Number($('settingOver').value),chem=Number($('settingChem').value);if($('settingOver').value===''||$('settingChem').value===''||![over,chem].every(v=>Number.isFinite(v)&&v>=0&&v<=100)){alert('Enter valid percentages between 0 and 100.');return;}if(!confirm(`Apply Overpack ${over}% and Chemical Weight ${chem}% to ${NAMES[$('settingCrop').value]} (${ $('settingSeed').value }) on ${line==='standalone'?'Stand Alone':'Line '+line}?`))return;overrides[settingKey(line,$('settingCrop').value,$('settingSeed').value)]={over,chem};if(persist(SETTINGS_KEY,overrides)){show('calc');title(line==='standalone'?'Stand Alone':'Line '+line,'Calculator');calculate();}}
+function restoreSettings(){const key=settingKey(line,$('settingCrop').value,$('settingSeed').value);if(!confirm('Restore default percentages for this crop and seed type?'))return;delete overrides[key];persist(SETTINGS_KEY,overrides);settingsFor();calculate();}
+function changeTareUnit(){const prev=$('tareUnit').dataset.previous||'KG',next=$('tareUnit').value;let value=Number($('tare').value);if(Number.isFinite(value)&&prev!==next){value=prev==='KG'?value*F:value/F;$('tare').value=value.toFixed(3);} $('tareUnit').dataset.previous=next;calculate();}
+function updateRegular(){if($('regular').value==='auto')return;calculate();}
+// Navigation
+ document.querySelectorAll('[data-line]').forEach(b=>b.onclick=()=>openLine(b.dataset.line));document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>openCalc(b.dataset.mode));$('comingBack').onclick=home;$('modeBack').onclick=home;$('back').onclick=back;$('settingsBtn').onclick=openSettings;$('closeSettings').onclick=()=>{show('calc');title(line==='standalone'?'Stand Alone':'Line '+line,'Calculator');calculate();};$('settingCrop').onchange=settingsFor;$('settingSeed').onchange=settingsFor;$('applySettings').onclick=saveSettings;$('restoreSettings').onclick=restoreSettings;
+$('samplesToggle').onclick=()=>{$('samplesBody').hidden=!$('samplesBody').hidden;$('samplesToggle').textContent=$('samplesBody').hidden?'Edit ▾':'Hide ▴';};$('addSample').onclick=()=>addSample();$('extraMinus').onclick=()=>{extraManual=true;$('extra').value=Math.max(0,Number($('extra').value)-1);calculate();};$('extraPlus').onclick=()=>{extraManual=true;$('extra').value=Number($('extra').value)+1;calculate();};$('extra').oninput=()=>{extraManual=true;calculate();};$('save').onclick=capture;$('reset').onclick=reset;
+['crop','seedType','condition','packSize','packUnit','pc','regular','tare'].forEach(id=>$(id).addEventListener('input',calculate));$('ea').addEventListener('input',()=>{extraManual=false;calculate();});$('tareUnit').addEventListener('change',changeTareUnit);$('tareUnit').dataset.previous='KG';home();
 })();
