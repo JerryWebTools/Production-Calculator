@@ -32,3 +32,16 @@ Static, mobile-friendly production calculator. No build step, login, server, or 
 2. Test each line with known production examples before publishing.
 3. Upload all three application files together; leave GitHub Pages configured as before.
 4. Refresh the published site and test on mobile and desktop.
+
+## v2.3 revised preview (2026-10-24)
+- Added **Leg** as a separate Concetti pack-only line (treated/untreated selection); it shares the existing pack-only calculation approach but maintains a distinct line identifier in saved calculations.
+- Kept all production line names in English in both language settings (Line 1/3/4, Leg, Stand Alone, Bulk Line).
+- Applied the selected button color to the line calculation cards/boxes, not only action buttons. White text on the accent color.
+- Limited the Quick Calculator to a portrait-oriented maximum width of 390px on desktop; responsive to narrow iPhone screens.
+- Still a preview: confirm Leg's calculation rules and validate results against actual orders before production use.
+
+### v2.3 tare display refinement
+When Bag Tare is zero, the existing Gross Bag Weight / EA result card displays 'Enter Bag Tare to calculate' instead of a numeric weight. Net weight and all calculation formulas remain unchanged. This applies to Line 3, Line 4, Leg, and Stand Alone where bag results are shown; the same wording is used in the calculation breakdown and saved details.
+
+## Approved compact header preview
+Back and Home stay together at the left; the line and operation appear on one line in the center; Settings uses a matching outlined style at right. On smaller screens the heading font scales down without wrapping. Existing calculator behavior and cards are unchanged.
