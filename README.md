@@ -1,34 +1,24 @@
-# Production Calculator v2.2
+# Production Calculator v2.3 — Consolidated Test Build
 
-Static, mobile-friendly production calculator. No build step, login, server, or external dependencies. Upload `index.html`, `app.js`, and `styles.css` to the repository root and serve with GitHub Pages.
+TEST BUILD ONLY. Upload these seven files (index.html, app.js, styles.css, brain.js, brain.css, sw.js, README.md) to the *Production-Calculator-Test* GitHub Pages repository root, not the production repo.
 
-## Included
-- Line 1 — Treat Only
-- Line 3 — Treat Only / Treat & Pack (Normal Corn, Shrunken Corn, Peas, Spinach, Other)
-- Line 4 — Treat Only / Treat & Pack (Peas, Beans)
-- Stand Alone — Pack Only, Treated/Untreated, Bag Tare (KG/LB, 3 decimals)
-- Bulk Line — Coming Soon placeholder
-- Crop and seed-type formula settings, locally saved, with confirmation and restore defaults
-- Extra EA suggestion and direct override for Lines 3 and 4
-- Regular and custom samples (G/KG/LB/KS)
-- Detailed Saved Calculations with View Details, Load, Delete, and local persistence
+Based on the approved two-row iPhone header preview. Production formulas and saved-calculation storage keys retained.
 
-## Calculation rules
-- 1 KG = 2.2046 LB; base KS weight = KS × 1000 ÷ PC ÷ 2.2046.
-- Commercial overpack 1%, Parent/Basic 0.5%; Spinach 0.5% in Line 3 and Stand Alone.
-- Normal Corn treated chemical weight 1%, Shrunken Corn 1.2%, otherwise 0% by default.
-- Treat lines: seed to treat = ceil(base per EA × calculated EA × (1 + overpack) + samples). Chemical weight affects finished bag target, **not** untreated seed to treat.
-- Stand Alone: net seed/bag = base × (1 + overpack) × (1 + chemical if treated); total = ceil(net seed/bag × order EA + samples); scale target = net seed/bag + tare. Tare excluded from total.
-- Extra EA (Treat & Pack only) = 1 + ceil(Order EA / 100), editable.
-- Samples are added after percentages.
+Changes:
+- Quick Calculator full-width, non-scrolling iPhone view; last completed calculation, persistent history (up to 200), confirmation before clear, reuse history values.
+- Unit Converter: length, weight, volume, temperature, pressure. Existing 8 Quick Calculator conversions retained inside Unit Converter > Original Quick Calculator Conversions; they still display a conversion below the main number when enabled.
+- Brain Break: tap the "PRODUCTION CALCULATOR" eyebrow on the Home screen five times in quick succession. Six games: Hangman, Wordle-style, Tic-Tac-Toe, Word Search, Crossword, Trivia. Records stored on the device. Easy/Medium/Hard/Progressive difficulty. Brain Break follows the language in Settings.
+- PC keeps existing compact Quick Calculator width. Other production calculator screens and formulas unchanged.
 
-## Data storage and privacy
-- All calculations run locally in the browser.
-- Formula settings and saved calculations use localStorage on the current browser/device. Clearing site data or using private browsing can remove them. No cross-device sync.
-- Optional Calculation IDs are entered by users; avoid sensitive identifiers.
+TEST BEFORE PUBLISHING TO MAIN:
+1. On iPhone, Quick Calculator keypad fits on screen with no vertical scrolling. Test live preview, '=' and History.
+2. Close/reopen browser and check history. Reuse history result and clear with confirmation.
+3. Test each Unit Converter category, reverse arrows, original conversions.
+4. Home title 5 taps opens Brain Break. Test all six games and return to Home.
+5. Confirm Line 3/4, Leg, Stand Alone, Pack All, Saved Calculations and Settings still work.
+6. Test both iPhone Safari and desktop browsers.
 
-## Release checklist
-1. Keep a backup of the prior GitHub version.
-2. Test each line with known production examples before publishing.
-3. Upload all three application files together; leave GitHub Pages configured as before.
-4. Refresh the published site and test on mobile and desktop.
+Known limitations: Records/history use localStorage (per device/browser, not synced); the included service worker caches the app after the first successful online visit, but offline operation should still be tested on the actual iPhone. Wordle-style mode accepts any five-letter guess, not dictionary-validated. Word Search uses tap-start/tap-end rather than drag. Crossword currently has one introductory puzzle per language; trivia has a starter set of 15 questions. These are deliberately small, basic starter games.
+
+## Small UI adjustment (test build 2)
+The existing Converter ON/OFF button now appears directly in Quick Calculator between History and Unit Converter. It continues to control the original live conversion beneath the calculator result. The original conversion unit selection remains inside Unit Converter > Original Quick Calculator Conversions. No production formulas were changed.
