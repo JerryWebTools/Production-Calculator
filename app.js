@@ -8,7 +8,7 @@ const fmt=(x,d)=>Number(x).toLocaleString('en-US',{minimumFractionDigits:d,maxim
 const esc=x=>String(x).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const validPositive=x=>Number.isFinite(x)&&x>0;
 const persist=(key,obj)=>{try{localStorage.setItem(key,JSON.stringify(obj));return true}catch{alert('Unable to save on this device. Check browser storage settings.');return false}};
-function show(view){['home','modeScreen','coming','calc','settings','saved','quick','preferences','brain'].forEach(id=>$(id).hidden=id!==view);$('settingsBtn').hidden=false;document.body.classList.toggle('quick-active',view==='quick');document.body.classList.toggle('brain-active',view==='brain');const navOn=view!=='home'&&view!=='quick'&&view!=='brain';$('globalNav').hidden=!navOn;['back','modeBack','quickBack'].forEach(id=>$(id).hidden=true);const backId=view==='calc'?'back':view==='modeScreen'?'modeBack':view==='quick'?'quickBack':null;if(backId)$(backId).hidden=false;$('modeLabel').hidden=true;document.querySelector('header').classList.toggle('insideView',navOn);}
+function show(view){['home','modeScreen','coming','calc','settings','saved','quick','preferences','brain'].forEach(id=>$(id).hidden=id!==view);$('settingsBtn').hidden=false;document.body.classList.toggle('quick-active',view==='quick');if($('installBanner'))$('installBanner').hidden=view!=='home'||window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone===true||(()=>{try{return localStorage.getItem('production-calculator-install-banner-dismissed')==='yes'}catch{return false}})();document.body.classList.toggle('brain-active',view==='brain');const navOn=view!=='home'&&view!=='quick'&&view!=='brain';$('globalNav').hidden=!navOn;['back','modeBack','quickBack'].forEach(id=>$(id).hidden=true);const backId=view==='calc'?'back':view==='modeScreen'?'modeBack':view==='quick'?'quickBack':null;if(backId)$(backId).hidden=false;$('modeLabel').hidden=true;document.querySelector('header').classList.toggle('insideView',navOn);}
 function title(name,sub){$('title').textContent=(document.querySelector('#calc:not([hidden])')&&sub&&['Treat & Pack','Treat Only','Pack Only'].includes(sub))?name+' · '+sub:name;$('subtitle').textContent=sub;}
 function home(){line=null;mode=null;show('home');title('Select a Line','Choose a production line.');}
 function openLine(v){line=v;if(v==='bulk'){show('coming');title('Bulk Line','Work in progress');return;}if(v==='3'||v==='4'){show('modeScreen');title('Line '+v,'Choose a calculation mode.');return;}openCalc(v==='1'?'treat':'standalone');}
@@ -51,7 +51,7 @@ if(!Array.isArray(qHistory))qHistory=[];
 const colorCodes={blue:'#2563eb',red:'#dc2626',green:'#15803d',yellow:'#b88a00',pink:'#be185d',gray:'#64748b',black:'#3f3f46'};
 function applyPrefs(){document.documentElement.dataset.theme=prefs.theme;document.documentElement.style.setProperty('--accent',colorCodes[prefs.color]||colorCodes.blue);document.documentElement.lang=prefs.language;['Language','Theme','Color'].forEach(k=>{const e=$('pref'+k);if(e)e.value=prefs[k.toLowerCase()]});translateUI();}
 const translations={
-'Select a Line':'Select a Line','Choose a production line.':'Selecciona una línea de producción.','Select a Production Line':'Seleccionar línea de producción','Line 1':'Line 1','Line 3':'Line 3','Line 4':'Line 4','Treat Only':'Solo tratamiento','Treat / Treat & Pack':'Tratar / Tratar y empacar','Leg':'Leg','Stand Alone':'Stand Alone','Pack Only':'Solo empaque','Bulk Line':'Bulk Line','Coming Soon 🚧':'Próximamente 🚧','Choose a mode':'Selecciona un modo','Treat & Pack':'Tratar y empacar','Seed to Treat':'Semilla por tratar','Seed to Treat + Bag Target':'Semilla por tratar + peso por bolsa','Crop Type':'Tipo de cultivo','Seed Type':'Tipo de semilla','Seed Condition':'Condición de semilla','Commercial':'Comercial','Parent / Basic':'Padre / Básica','Treated':'Tratada','Untreated':'Sin tratar','Pack Size':'Tamaño de empaque','Order EA':'EA de orden','Bag Tare Weight':'Tara de bolsa','Samples':'Muestras','Regular Sample':'Muestra regular','Edit ▾':'Editar ▾','Hide ▴':'Ocultar ▴','+ Add Custom Sample':'+ Agregar muestra personalizada','Extra EA':'EA adicionales','Net Seed Weight / EA':'Peso neto de semilla / EA','Gross Bag Weight / EA':'Peso bruto de bolsa / EA','Enter Bag Tare to calculate':'Ingresa la tara de la bolsa para calcular','Finished Bag Target':'Peso final por bolsa','Calculated EA':'EA calculados','Total Seed Required':'Semilla total requerida','Calculation Breakdown':'Desglose del cálculo','KILOGRAMS':'KILOGRAMOS','POUNDS':'LIBRAS','Save':'Guardar','Reset Inputs':'Restablecer datos','Saved Calculations':'Cálculos guardados','Settings':'Configuración','Formula Settings':'Configuración de fórmulas','Quick Calculator':'Calculadora rápida','Calculator + Unit Converter':'Calculadora + conversor de unidades','Converter ON':'Conversor activado','Converter OFF':'Conversor desactivado','Recent History':'Historial reciente','Clear':'Borrar','Close':'Cerrar','Apply Changes':'Aplicar cambios','Restore Defaults':'Restaurar valores','Pack All — Actual Available Seed':'Empacar todo — Semilla disponible real','Actual Available Seed (KG)':'Semilla disponible real (KG)','Calculation Summary':'Resumen del cálculo','Back to Home':'Volver al inicio','No recent calculations.':'Sin cálculos recientes.','Complete Bags':'Bolsas completas','Remaining Seed':'Semilla restante','PO Estimated EA':'EA estimados en PO','Actual EA Difference':'Diferencia de EA reales','Formula Settings':'Configuración de fórmulas'};
+'Select a Line':'Select a Line','Choose a production line.':'Selecciona una línea de producción.','Select a Production Line':'Seleccionar línea de producción','Line 1':'Line 1','Line 3':'Line 3','Line 4':'Line 4','Treat Only':'Solo tratamiento','Treat / Treat & Pack':'Tratar / Tratar y empacar','Leg':'Leg','Stand Alone':'Stand Alone','Pack Only':'Solo empaque','Bulk Line':'Bulk Line','Coming Soon 🚧':'Próximamente 🚧','Choose a mode':'Selecciona un modo','Treat & Pack':'Tratar y empacar','Seed to Treat':'Semilla por tratar','Seed to Treat + Bag Target':'Semilla por tratar + peso por bolsa','Crop Type':'Tipo de cultivo','Seed Type':'Tipo de semilla','Seed Condition':'Condición de semilla','Commercial':'Comercial','Parent / Basic':'Padre / Básica','Treated':'Tratada','Untreated':'Sin tratar','Pack Size':'Tamaño de empaque','Order EA':'EA de orden','Bag Tare Weight':'Tara de bolsa','Samples':'Muestras','Regular Sample':'Muestra regular','Edit ▾':'Editar ▾','Hide ▴':'Ocultar ▴','+ Add Custom Sample':'+ Agregar muestra personalizada','Extra EA':'EA adicionales','Net Seed Weight / EA':'Peso neto de semilla / EA','Gross Bag Weight / EA':'Peso bruto de bolsa / EA','Enter Bag Tare to calculate':'Ingresa la tara de la bolsa para calcular','Finished Bag Target':'Peso final por bolsa','Calculated EA':'EA calculados','Total Seed Required':'Semilla total requerida','Calculation Breakdown':'Desglose del cálculo','KILOGRAMS':'KILOGRAMOS','POUNDS':'LIBRAS','Save':'Guardar','Reset Inputs':'Restablecer datos','Saved Calculations':'Cálculos guardados','Settings':'Configuración','Formula Settings':'Configuración de fórmulas','Quick Calculator':'Calculadora rápida','Calculator + Unit Converter':'Calculadora + conversor de unidades','Converter ON':'Conversor activado','Converter OFF':'Conversor desactivado','Recent History':'Historial reciente','Clear':'Borrar','Close':'Cerrar','Apply Changes':'Aplicar cambios','Restore Defaults':'Restaurar valores','Pack All — Actual Available Seed':'Empacar todo — Semilla disponible real','Actual Available Seed (KG)':'Semilla disponible real (KG)','Calculation Summary':'Resumen del cálculo','Back to Home':'Volver al inicio','No recent calculations.':'Sin cálculos recientes.','Complete Bags':'Bolsas completas','Remaining Seed':'Semilla restante','PO Estimated EA':'EA estimados en PO','Actual EA Difference':'Diferencia de EA reales','Formula Settings':'Configuración de fórmulas',"✦ What's New · v2.4":'✦ Novedades · v2.4'};
 const originalText=new WeakMap();
 function translateUI(){const spanish=prefs.language==='es';document.querySelectorAll('button, label, h1, h2, strong, summary, .eyebrow, .pill, small').forEach(el=>{if(el.closest('#quickHistory,#packAllOutput,#savedList,#breakdown'))return;for(const node of el.childNodes){if(node.nodeType!==3)continue;if(!originalText.has(node))originalText.set(node,node.nodeValue);const base=originalText.get(node);const trimmed=base.trim();if(!trimmed)continue;const clean=trimmed.replace(/^[←▦⚙️💾]+\s*/u,'');const t=translations[clean];if(t)node.nodeValue=spanish?base.replace(clean,t):base;}});document.querySelectorAll('option').forEach(el=>{if(!el.dataset.originalLabel)el.dataset.originalLabel=el.textContent;const t=translations[el.dataset.originalLabel];el.textContent=spanish&&t?t:el.dataset.originalLabel;});}
 function openPrefs(){prefReturn=document.querySelector('#quick:not([hidden])')?'quick':document.querySelector('#calc:not([hidden])')?'calc':document.querySelector('#settings:not([hidden])')?'settings':'home';show('preferences');title('Settings','Language, theme and button color');applyPrefs();}
@@ -107,5 +107,78 @@ window.returnBrainHome=home;
  document.querySelectorAll('[data-line]').forEach(b=>b.onclick=()=>openLine(b.dataset.line));document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>openCalc(b.dataset.mode));$('comingBack').onclick=home;$('modeBack').onclick=home;$('back').onclick=back;$('settingsBtn').onclick=openPrefs;$('closeSettings').onclick=()=>{show('calc');title(lineName(line),'Calculator');calculate();};$('settingCrop').onchange=settingsFor;$('settingSeed').onchange=settingsFor;$('applySettings').onclick=saveSettings;$('restoreSettings').onclick=restoreSettings;
 $('samplesToggle').onclick=()=>{$('samplesBody').hidden=!$('samplesBody').hidden;$('samplesToggle').textContent=$('samplesBody').hidden?'Edit ▾':'Hide ▴';};$('addSample').onclick=()=>addSample();$('extraMinus').onclick=()=>{extraManual=true;$('extra').value=Math.max(0,Number($('extra').value)-1);calculate();};$('extraPlus').onclick=()=>{extraManual=true;$('extra').value=Number($('extra').value)+1;calculate();};$('extra').oninput=()=>{extraManual=true;calculate();};$('save').onclick=capture;$('reset').onclick=reset;
 ['crop','seedType','condition','packSize','packUnit','pc','regular','tare'].forEach(id=>$(id).addEventListener('input',calculate));$('ea').addEventListener('input',()=>{extraManual=false;calculate();});$('tareUnit').addEventListener('change',changeTareUnit);$('tareUnit').dataset.previous='KG';home();
+// v2.4 release notes: once per version per browser, with persistent access in Settings.
+const RELEASE_KEY='production-calculator-whats-new-v2.4';
+const releaseNotes={
+  en:{title:"What's New",items:["JS Studio branding is now part of Prod Calc.","New Prod Calc home-screen icon and short name for iPhone.","Release notes are available anytime in Settings."],note:"Quick Calculator performance improvements from v2.3.1 are preserved.",close:'Continue'},
+  es:{title:'Novedades',items:['La identidad de JS Studio ahora forma parte de Prod Calc.','Nuevo ícono y nombre corto de Prod Calc para la pantalla de inicio del iPhone.','Puedes consultar las novedades cuando quieras desde Configuración.'],note:'Se conservan las mejoras de rendimiento de Quick Calculator de v2.3.1.',close:'Continuar'}
+};
+let whatsNewPreviouslyFocused=null;
+function showWhatsNew(){
+  const t=releaseNotes[prefs.language==='es'?'es':'en'];
+  $('whatsNewTitle').textContent=t.title;
+  const list=$('whatsNewItems');list.replaceChildren();
+  t.items.forEach(s=>{const li=document.createElement('li');li.textContent=s;list.appendChild(li)});
+  $('whatsNewNote').textContent=t.note;
+  $('whatsNewClose').textContent=t.close;
+  whatsNewPreviouslyFocused=document.activeElement;
+  $('whatsNewModal').hidden=false;
+  $('whatsNewClose').focus();
+}
+function closeWhatsNew(){
+  $('whatsNewModal').hidden=true;
+  try{localStorage.setItem(RELEASE_KEY,'seen')}catch{}
+  if(whatsNewPreviouslyFocused&&whatsNewPreviouslyFocused.isConnected)whatsNewPreviouslyFocused.focus();
+}
+// Install guide: static instructions work without network; QR links to the official production site.
+const INSTALL_URL='https://jerrywebtools.github.io/Production-Calculator/';
+const INSTALL_DISMISS_KEY='production-calculator-install-banner-dismissed';
+const installCopy={
+ en:{heading:'Install Prod Calc',intro:'Add Prod Calc to your phone’s Home Screen for quick access.',ios:'iPhone / iPad · Safari',android:'Android · Chrome',iosSteps:['Open Prod Calc in Safari.','Tap the Share button (square with arrow).','Choose Add to Home Screen.','Confirm the name Prod Calc and tap Add.'],androidSteps:['Open Prod Calc in Chrome.','Tap the three-dot menu.','Choose Install app or Add to Home screen.','Confirm the installation.'],qr:'Scan to open Prod Calc',qrNote:'This QR code opens the official app (not the test version).',open:'Open official Prod Calc',copy:'Copy link',copied:'Link copied',banner:'Want faster access? Add Prod Calc to your Home Screen.',show:'Show Instructions',dismiss:'Not Now'},
+ es:{heading:'Instalar Prod Calc',intro:'Agrega Prod Calc a la pantalla de inicio de tu teléfono para abrirla fácilmente.',ios:'iPhone / iPad · Safari',android:'Android · Chrome',iosSteps:['Abre Prod Calc en Safari.','Toca Compartir (cuadro con flecha).','Selecciona Agregar a pantalla de inicio.','Confirma el nombre Prod Calc y toca Agregar.'],androidSteps:['Abre Prod Calc en Chrome.','Toca el menú de tres puntos.','Selecciona Instalar app o Agregar a pantalla principal.','Confirma la instalación.'],qr:'Escanea para abrir Prod Calc',qrNote:'Este código QR abre la aplicación oficial (no la versión de pruebas).',open:'Abrir Prod Calc oficial',copy:'Copiar enlace',copied:'Enlace copiado',banner:'¿Quieres acceso rápido? Agrega Prod Calc a tu pantalla de inicio.',show:'Ver instrucciones',dismiss:'Ahora no'}
+};
+function applyInstallCopy(){
+ const v=installCopy[prefs.language==='es'?'es':'en'];
+ for(const [id,key] of [['installHeading','heading'],['installIntro','intro'],['installIosTitle','ios'],['installAndroidTitle','android'],['installQrTitle','qr'],['installQrNote','qrNote'],['installLink','open'],['installCopy','copy'],['installBannerText','banner'],['installBannerShow','show'],['installBannerDismiss','dismiss']])$(id).textContent=v[key];
+ for(const [id,key] of [['installIosSteps','iosSteps'],['installAndroidSteps','androidSteps']]){const el=$(id);el.replaceChildren();v[key].forEach(step=>{const li=document.createElement('li');li.textContent=step;el.append(li)});}
+}
+function standaloneInstall(){return window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone===true;}
+function showInstallBanner(){let dismissed=false;try{dismissed=localStorage.getItem(INSTALL_DISMISS_KEY)==='yes'}catch{}$('installBanner').hidden=standaloneInstall()||dismissed;}
+$('installBannerShow').addEventListener('click',()=>{openPrefs();$('installHeading').scrollIntoView({block:'center',behavior:'smooth'});});
+$('installBannerDismiss').addEventListener('click',()=>{$('installBanner').hidden=true;try{localStorage.setItem(INSTALL_DISMISS_KEY,'yes')}catch{}});
+$('installCopy').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(INSTALL_URL);$('installCopyStatus').textContent=installCopy[prefs.language==='es'?'es':'en'].copied}catch{window.prompt('Copy URL:',INSTALL_URL)}});
+// Manual refresh: check connectivity and request the latest service worker before reloading.
+// Does not clear localStorage, IndexedDB, or saved calculator history.
+const refreshText={
+ en:{heading:'Refresh App',help:'Reload Prod Calc to get the latest published files. Requires internet. Your saved calculations and settings stay on this device.',button:'↻ Refresh App',working:'Checking for updated files…',offline:'Unable to reach the app server. Check your connection and try again.',failed:'Could not refresh. Please try again when connected.'},
+ es:{heading:'Actualizar aplicación',help:'Vuelve a cargar Prod Calc para obtener los archivos más recientes. Requiere internet. Tus cálculos y ajustes guardados permanecen en este dispositivo.',button:'↻ Actualizar aplicación',working:'Buscando archivos actualizados…',offline:'No se pudo conectar al servidor. Revisa tu conexión e inténtalo de nuevo.',failed:'No se pudo actualizar. Inténtalo de nuevo cuando tengas conexión.'}
+};
+function applyRefreshCopy(){const t=refreshText[prefs.language==='es'?'es':'en'];$('refreshHeading').textContent=t.heading;$('refreshHelp').textContent=t.help;if(!$('refreshAppBtn').disabled)$('refreshAppBtn').textContent=t.button;}
+$('prefLanguage').addEventListener('change',applyRefreshCopy);
+applyRefreshCopy();
+$('refreshAppBtn').addEventListener('click',async()=>{
+ const t=refreshText[prefs.language==='es'?'es':'en'];
+ const btn=$('refreshAppBtn'),status=$('refreshAppStatus');
+ btn.disabled=true;status.textContent=t.working;
+ try{
+  // This request must reach the server; a cached/offline fallback is not enough.
+  const controller=new AbortController();const timeout=setTimeout(()=>controller.abort(),10000);
+  let response;
+  try{response=await fetch('./index.html?refresh_check='+Date.now(),{cache:'no-store',signal:controller.signal});}finally{clearTimeout(timeout)}
+  if(!response.ok||response.type==='opaque')throw Error('unavailable');
+  if('serviceWorker' in navigator){const reg=await navigator.serviceWorker.getRegistration();if(reg)await reg.update();}
+  const url=new URL(window.location.href);url.searchParams.set('refresh',Date.now().toString());
+  window.location.replace(url.toString());
+ }catch(error){status.textContent=t.offline;btn.disabled=false;btn.textContent=t.button;}
+});
+$('whatsNewPrefs').addEventListener('click',showWhatsNew);
+$('prefLanguage').addEventListener('change',applyInstallCopy);
+applyInstallCopy();showInstallBanner();
+$('whatsNewOpen').addEventListener('click',showWhatsNew);
+$('whatsNewClose').addEventListener('click',closeWhatsNew);
+$('whatsNewModal').addEventListener('click',e=>{if(e.target===$('whatsNewModal'))closeWhatsNew()});
+document.addEventListener('keydown',e=>{if(!$('whatsNewModal').hidden){if(e.key==='Escape')closeWhatsNew();if(e.key==='Tab'){e.preventDefault();$('whatsNewClose').focus()}}});
+try{if(localStorage.getItem(RELEASE_KEY)!=='seen')showWhatsNew()}catch{showWhatsNew()}
+
 if('serviceWorker' in navigator && location.protocol==='https:') navigator.serviceWorker.register('./sw.js').catch(()=>{});
 })();
