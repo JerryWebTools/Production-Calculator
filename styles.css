@@ -245,3 +245,321 @@ body{background:var(--bg);color:var(--fg)}.card{background:var(--panel);border-c
 #whatsNewPrefs{margin-top:12px}
 
 .appRefreshSection{border-top:1px solid rgba(145,170,200,.25);margin-top:20px;padding-top:16px}.appRefreshSection h3{margin:0 0 8px}.appRefreshSection p{margin:8px 0}
+
+/* v2.5 Stand-Alone operator training guide */
+#standaloneGuide{margin-top:18px;padding-top:15px;border-top:1px solid var(--edge)}
+#standaloneGuide summary{list-style-position:inside;background:var(--panel);border:1px solid var(--accent);border-radius:12px;padding:14px;font-weight:750;color:var(--fg);touch-action:manipulation}
+#standaloneGuide .guideIntro,#standaloneGuide .guideFoot{font-size:13px;line-height:1.5;color:var(--muted);margin:12px 0}
+#standaloneGuide .guideInput,#standaloneGuide .guideFinal{border:1px solid var(--edge);border-radius:12px;padding:12px;margin:12px 0;background:var(--panel)}
+#standaloneGuide .guideRow{display:flex;justify-content:space-between;gap:10px;padding:7px 0;font-size:13px;border-bottom:1px solid var(--edge)}
+#standaloneGuide .guideRow strong{text-align:right;overflow-wrap:anywhere}
+#standaloneGuide .guideStep{border:1px solid var(--edge);border-radius:12px;padding:13px;margin:10px 0;background:var(--panel)}
+#standaloneGuide .guideStepTitle{display:flex;gap:10px;align-items:center;font-size:15px}
+#standaloneGuide .guideNum{background:var(--accent);color:#fff;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;width:29px;height:29px;flex:none;font-weight:750}
+#standaloneGuide .guideStep p{font-size:13px;line-height:1.5;color:var(--muted);margin:10px 0}
+#standaloneGuide .guideMath{white-space:pre-line;overflow-wrap:anywhere;background:var(--bg);padding:12px;border-radius:9px;font:500 13px/1.65 ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--fg)}
+#standaloneGuide .guideResult{font-weight:750;color:var(--fg);margin-top:9px;font-size:13px}
+#standaloneGuide .guideFinal{border-color:var(--accent)}
+
+/* TEST-only appearance: never include in production builds */
+.testEnvironmentBanner{background:#f6b82e;color:#191508;text-align:center;font-size:clamp(12px,2.5vw,17px);font-weight:900;letter-spacing:.06em;padding:10px 8px;border-radius:12px;margin-bottom:12px;border:2px solid #ffdf75;box-shadow:0 2px 12px #0003}
+
+/* v2.5 TEST home screen cleanup; does not alter calculator/result layout. */
+.compactHeader .headerActions{display:flex;gap:7px;align-items:center;flex:0 0 auto;order:2}
+.compactHeader .headerActions #settingsBtn{order:initial}
+.compactHeader #homeRefreshBtn{min-height:42px;border:2px solid var(--accent);background:var(--panel);color:var(--fg);font-size:13px;font-weight:750;border-radius:10px;padding:8px 12px}
+#brainSecretTrigger{cursor:default;user-select:none;touch-action:manipulation}
+#brainSecretTrigger:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+@media(max-width:520px){
+ .compactHeader .headerActions{gap:4px}
+ .compactHeader #homeRefreshBtn{min-height:40px;padding:7px 7px;font-size:11px}
+ .compactHeader .headerTitle h1{font-size:clamp(12px,3.4vw,16px)}
+}
+
+/* v2.5 TEST: center the Home title relative to the entire page, not the buttons.
+   Keep the approved inside-calculator header unchanged. */
+@media (min-width: 700px) {
+  .compactHeader:not(.insideView) .compactHeaderLine {
+    display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;
+  }
+  .compactHeader:not(.insideView) .headerTitle {grid-column:2;grid-row:1;text-align:center;justify-self:center;}
+  .compactHeader:not(.insideView) .headerActions {grid-column:3;grid-row:1;justify-self:end;}
+}
+@media (max-width: 699px) {
+  .compactHeader:not(.insideView) .compactHeaderLine {
+    display:grid;grid-template-columns:minmax(0,1fr);row-gap:12px;
+  }
+  .compactHeader:not(.insideView) .headerTitle {grid-column:1;grid-row:1;text-align:center;width:100%;}
+  .compactHeader:not(.insideView) .headerTitle h1 {font-size:clamp(22px,5vw,29px);white-space:normal;}
+  .compactHeader:not(.insideView) .headerActions {grid-column:1;grid-row:2;justify-self:center;}
+}
+
+/* v2.5 TEST: Refresh on the left, centered title, Settings on the right.
+   Only the Home view is affected; calculator navigation stays unchanged. */
+.compactHeader:not(.insideView) .compactHeaderLine {
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);
+  align-items:center;
+  column-gap:12px;
+}
+.compactHeader:not(.insideView) .headerActions {display:contents;}
+.compactHeader:not(.insideView) #homeRefreshBtn {
+  grid-column:1;grid-row:1;justify-self:start;
+}
+.compactHeader:not(.insideView) .headerTitle {
+  grid-column:2;grid-row:1;justify-self:center;text-align:center;width:auto;
+}
+.compactHeader:not(.insideView) #settingsBtn {
+  grid-column:3;grid-row:1;justify-self:end;
+}
+@media(max-width:699px){
+  .compactHeader:not(.insideView) .compactHeaderLine {
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+    row-gap:10px;
+  }
+  .compactHeader:not(.insideView) .headerTitle {
+    grid-column:1 / -1;grid-row:1;width:100%;
+  }
+  .compactHeader:not(.insideView) #homeRefreshBtn {
+    grid-column:1;grid-row:2;justify-self:start;
+  }
+  .compactHeader:not(.insideView) #settingsBtn {
+    grid-column:2;grid-row:2;justify-self:end;
+  }
+}
+
+/* v2.5 TEST: matching Home Refresh / Settings button dimensions. */
+.compactHeader:not(.insideView) #homeRefreshBtn,
+.compactHeader:not(.insideView) #settingsBtn {
+  box-sizing:border-box;
+  width:148px;
+  min-height:52px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  font-size:14px;
+  font-weight:750;
+  padding:9px 10px;
+  white-space:nowrap;
+}
+@media(max-width:520px){
+  .compactHeader:not(.insideView) #homeRefreshBtn,
+  .compactHeader:not(.insideView) #settingsBtn {
+    width:124px;min-height:46px;font-size:12px;padding:7px 8px;
+  }
+}
+
+/* v2.5 TEST iPhone button-size fix: fixed, identical boxes and no iOS text autosizing. */
+.compactHeader:not(.insideView) .compactHeaderLine > .headerActions {display:contents;}
+.compactHeader:not(.insideView) #homeRefreshBtn,
+.compactHeader:not(.insideView) #settingsBtn {
+  -webkit-appearance:none;appearance:none;
+  box-sizing:border-box !important;
+  width:148px !important; min-width:148px !important; max-width:148px !important;
+  height:52px !important; min-height:52px !important; max-height:52px !important;
+  margin:0 !important; padding:0 8px !important;
+  flex:none !important; line-height:1.2 !important;
+  font-size:14px !important; -webkit-text-size-adjust:100%;
+  display:flex !important; align-items:center !important; justify-content:center !important;
+  border:2px solid var(--accent) !important; border-radius:10px !important;
+  white-space:nowrap !important;
+}
+@media(max-width:520px){
+ .compactHeader:not(.insideView) #homeRefreshBtn,
+ .compactHeader:not(.insideView) #settingsBtn {
+  width:124px !important;min-width:124px !important;max-width:124px !important;
+  height:46px !important;min-height:46px !important;max-height:46px !important;
+  font-size:12px !important;
+ }
+}
+
+/* v2.5 TEST Build 2: visible only when a newer published build is confirmed. */
+.updateBanner{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:#14253a;border:2px solid #f3bb39;border-radius:12px;padding:12px 16px;margin:12px 0;color:#fff}
+.updateBanner[hidden]{display:none!important}
+.updateBanner strong{font-size:1rem;color:#ffce56}
+.updateBanner p{margin:4px 0 0}
+.updateBanner #updateNowBtn{white-space:nowrap;min-height:42px}
+.updateBanner #updateBannerStatus{flex-basis:100%;margin:0}
+
+/* Seed Converter (TEST Build 7) */
+.seedResultGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:16px 0}.seedResultGrid>div{min-width:0;background:var(--panel,#202a38);border:1px solid var(--border,#566071);border-radius:12px;padding:14px 8px;text-align:center}.seedResultGrid span{display:block;font-size:12px;opacity:.75}.seedResultGrid strong{display:block;margin-top:6px;font-size:clamp(15px,3.5vw,22px);overflow-wrap:anywhere;font-variant-numeric:tabular-nums}@media(max-width:390px){.seedResultGrid{gap:5px}.seedResultGrid>div{padding:10px 4px}}
+
+/* v2.5 TEST Build 8 — Quick Calculator dual display */
+#quick .quickLastHeader{display:flex;align-items:center;justify-content:space-between;gap:8px}
+#quick #quickUndo{font-size:12px;min-height:31px;padding:5px 12px;border-radius:8px}
+#quick #quickUndo:disabled{opacity:.4}
+#quick .quickLastValue{margin-top:4px}
+#quick .quickDisplays{display:grid;grid-template-columns:minmax(0,30fr) minmax(0,70fr);gap:6px;min-height:220px;flex:1;min-width:0}
+#quick .quickDisplays.converterOff{grid-template-columns:minmax(0,1fr)}
+#quick .quickMini[hidden],#quick #quickSecondary[hidden]{display:none!important}
+#quick .quickMini,#quick .quickCalcPanel{min-width:0;min-height:220px;background:var(--bg);border:2px solid var(--edge);border-radius:14px;padding:10px 7px;display:flex;flex-direction:column;cursor:pointer}
+#quick .quickDisplays .quickSelected{border-color:var(--accent)}
+#quick .quickPanelTitle{font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.15px}
+#quick .quickMini .quickPanelTitle{text-align:center;font-size:9px}
+#quick .quickMiniDivider{height:1px;background:var(--edge);margin:10px 0}
+#quick .quickFieldLabel{font-size:10px;color:var(--muted);font-weight:700;margin-bottom:6px}
+#quick .quickMiniValue{display:flex;justify-content:flex-end;align-items:baseline;gap:4px;min-width:0;white-space:nowrap;font-variant-numeric:tabular-nums}
+#quick #quickMiniInput,#quick #quickMiniOutput{font-weight:700;min-width:0;letter-spacing:-.4px}
+#quick #quickMiniInputUnit,#quick #quickMiniOutputUnit{font-size:10px;font-weight:700;flex:none}
+#quick .quickMiniResult{color:#f3b84b}
+#quick #quickMiniSwap{align-self:center;min-height:32px;padding:4px 12px;margin:9px 0;color:#f3b84b;border-color:#877344;font-size:18px;border-radius:8px}
+#quick #quickMiniUse{margin-top:auto;min-height:39px;padding:8px 2px;border-radius:9px;font-size:12px;font-weight:700;background:var(--panel);border-color:var(--edge)}
+#quick .calcDisplay.quickCalcPanel{margin:0;padding:12px 10px;text-align:right;justify-content:space-between}
+#quick .quickCalcBottom{min-width:0;display:flex;flex-direction:column;justify-content:flex-end;gap:4px}
+#quick #quickNumber{font-weight:600;line-height:1.15;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:clip;letter-spacing:-1px;font-variant-numeric:tabular-nums}
+#quick #quickExpression{min-height:23px;font-size:clamp(12px,3.5vw,17px);overflow-wrap:anywhere}
+#quick #quickSecondary{border-top:1px solid var(--edge);margin-top:9px;padding-top:9px}
+#quick #quickMainSwap{background:transparent;color:var(--muted);border:0;padding:2px 0;font-size:11px}
+#quick #quickConverted{color:#f3b84b;font-size:clamp(15px,4.5vw,21px);font-weight:700;margin:5px 0 0;overflow-wrap:anywhere}
+#quick .quickHistoryList .historyItem{display:flex;flex-direction:column;align-items:stretch;gap:4px;padding:10px 12px}
+#quick .quickHistoryList .historyItem strong{text-align:right}
+@media(max-width:599px){body.quick-active #quick .quickDisplays{min-height:155px}body.quick-active #quick .quickMini,body.quick-active #quick .quickCalcPanel{min-height:155px}}
+@media(max-width:350px){#quick .quickMini,#quick .quickCalcPanel{padding-left:5px;padding-right:5px}#quick .quickMiniValue{gap:2px}}
+
+
+/* v2.5 TEST Build 9 — clear selection, compact tools, accessible transfers */
+#quick .quickTools{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}
+#quick .quickTools button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:59px;padding:6px 2px;white-space:normal;line-height:1.1}
+#quick .quickTools .toolIcon{font-size:20px;line-height:1.1;font-weight:700}
+#quick .quickTools .toolLabel{font-size:clamp(9px,2.5vw,11px);line-height:1.12;text-align:center;overflow-wrap:normal}
+#quick .quickDisplays .quickSelected{border:3px solid var(--accent);background:color-mix(in srgb,var(--accent) 10%,var(--bg));box-shadow:inset 0 0 0 1px var(--accent)}
+#quick .quickPanelTitle{display:flex;align-items:center;justify-content:space-between;gap:2px}
+#quick .quickMini .quickPanelTitle{font-size:9px;flex-wrap:wrap;justify-content:center}
+#quick .quickActiveMark{display:none;color:var(--accent);font-size:9px;letter-spacing:0;white-space:nowrap;font-weight:800}
+#quick .quickSelected .quickActiveMark{display:inline}
+#quick .quickMiniDivider{margin:6px 0}
+#quick .quickFieldLabel{margin-bottom:3px}
+#quick #quickMiniSwap{margin:5px 0;min-height:30px}
+#quick #quickMiniUse{min-height:38px;flex-shrink:0;position:relative;z-index:1;margin-top:auto}
+#quick #quickNumber{max-width:100%;line-height:1.05}
+#quick .unitToolTabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:0 0 16px}
+#quick .unitToolTabs button{min-height:46px;padding:8px 5px;font-size:13px}
+#quick .unitToolTabs .active{border:2px solid var(--accent);box-shadow:inset 0 -2px var(--accent)}
+#quick .percentInputs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+#quick .percentInputs label{min-width:0}
+#quick .percentAnswer strong{font-size:clamp(28px,8vw,40px);font-variant-numeric:tabular-nums}
+#quick .percentUse{width:100%;min-height:48px}
+@media(max-width:599px){
+  body.quick-active #quick .quickMain{min-height:0}
+  body.quick-active #quick .quickDisplays{min-height:205px;flex:1 1 auto}
+  body.quick-active #quick .quickMini,body.quick-active #quick .quickCalcPanel{min-height:205px}
+  body.quick-active #quick .quickKeys button{height:clamp(40px,calc((100dvh - 410px - env(safe-area-inset-bottom))/5),72px)}
+  body.quick-active #quick .quickMini{padding-top:7px;padding-bottom:7px}
+}
+@media(max-width:370px){
+  #quick .quickTools .toolLabel{font-size:9px}
+  #quick .quickTools button{padding-left:1px;padding-right:1px}
+}
+
+/* v2.5 TEST Build 10: selection contrast and readable responsive numbers. */
+:root[data-quick-accent="black"] #quick .quickDisplays .quickSelected,
+:root[data-quick-accent="gray"] #quick .quickDisplays .quickSelected{
+  border-color:#fff;
+  box-shadow:inset 0 0 0 1px #fff,0 0 0 1px rgba(255,255,255,.45);
+}
+:root[data-quick-accent="black"] #quick .quickSelected .quickActiveMark,
+:root[data-quick-accent="gray"] #quick .quickSelected .quickActiveMark{color:#fff}
+:root[data-theme="light"][data-quick-accent="black"] #quick .quickDisplays .quickSelected,
+:root[data-theme="light"][data-quick-accent="gray"] #quick .quickDisplays .quickSelected{
+  background:#253146;
+  color:#fff;
+}
+:root[data-theme="light"][data-quick-accent="black"] #quick .quickDisplays .quickSelected .quickPanelTitle,
+:root[data-theme="light"][data-quick-accent="gray"] #quick .quickDisplays .quickSelected .quickPanelTitle,
+:root[data-theme="light"][data-quick-accent="black"] #quick .quickDisplays .quickSelected .quickFieldLabel,
+:root[data-theme="light"][data-quick-accent="gray"] #quick .quickDisplays .quickSelected .quickFieldLabel{color:#fff}
+#quick .quickCalcBottom{width:100%;max-width:100%;overflow:hidden}
+#quick #quickNumber{display:block;width:100%;max-width:100%;white-space:nowrap;overflow:hidden;text-align:right;letter-spacing:0;font-variant-numeric:tabular-nums}
+#quick #quickMiniInput,#quick #quickMiniOutput{display:inline-block;max-width:100%;white-space:nowrap;overflow:hidden;vertical-align:bottom}
+#quick .quickMiniValue{width:100%;overflow:hidden}
+
+/* Build 11: mobile-friendly standalone Quick Seed Calculator */
+#quickSeed .quickSeedResults{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+#quickSeed .quickSeedResults>div{min-width:0;border:1px solid var(--edge);background:var(--bg);border-radius:12px;padding:12px}
+#quickSeed .quickSeedResults strong{display:block;font-size:13px;line-height:1.4}
+#quickSeed .quickSeedResults .number{font-size:clamp(19px,4.5vw,28px);overflow-wrap:anywhere}
+#quickSeed .quickSeedTotal{border-color:var(--accent)!important}
+#quickSeed .quickSeedResults .muted{font-size:13px;overflow-wrap:anywhere}
+#quickSeed details{margin-top:16px;padding-top:14px}
+#quickSeed #qsGuide .guideStep{padding:13px 0;border-bottom:1px solid var(--edge)}
+#quickSeed #qsGuide .guideMath{white-space:pre-line;overflow-wrap:anywhere;background:var(--bg);padding:12px;border-radius:9px;font:500 13px/1.65 ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--fg);margin-top:8px}
+#quickSeed .inline select{width:75px}
+@media(max-width:370px){#quickSeed .quickSeedResults{grid-template-columns:1fr}}
+
+/* Quick Seed Calculator — approved screenshot demo styling, scoped to this tool only */
+#quickSeed{max-width:850px;margin:0 auto;padding:2px 0 14px}
+#quickSeed .qsPanel{background:var(--accent);border:1px solid color-mix(in srgb,var(--accent),white 16%);border-radius:15px;padding:18px;margin:12px 0;color:#fff}
+#quickSeed .qsPanel h2{font-size:18px;font-weight:500;margin:2px 0 24px;color:#fff}
+#quickSeed .qsField{display:block;color:#fff;font-weight:700;font-size:14px;min-width:0}
+#quickSeed .qsField input{display:block;width:100%;margin:9px 0 4px;border:1px solid #243b63;background:#0b172a;color:#fff;border-radius:10px;padding:12px 13px;font-size:18px;min-height:52px}
+#quickSeed .qsField input::placeholder{color:#91a8c9}
+#quickSeed .qsExamples{display:block;color:#d7e3ff;font-size:12px;font-weight:400;line-height:1.5;margin:5px 0 0}
+#quickSeed .qsPackRow{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);align-items:end;gap:12px}
+#quickSeed .qsUnitTitle{text-align:center;font-size:19px;font-weight:800;margin-bottom:9px}
+#quickSeed .qsUnitButtons{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}
+#quickSeed .qsUnitButton{min-height:52px;padding:8px 3px;border-radius:10px;border:1px solid #a4bcf8;background:color-mix(in srgb,var(--accent),black 22%);color:#fff;font-size:14px;font-weight:800}
+#quickSeed .qsUnitButton.qsUnitActive{background:#fff;color:#06142a;border-color:#fff}
+#quickSeed .qsPackExamples{margin:12px 0 22px}
+#quickSeed .qsFields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:14px;row-gap:18px}
+#quickSeed .qsOptional{font-size:12px;font-weight:400;color:#d7e3ff}
+#quickSeed .qsResultHeading{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}
+#quickSeed .qsResultHeading h2{margin:0}
+#quickSeed .qsReset{padding:10px 12px;border:1px solid #d5e1ff;border-radius:9px;background:transparent;color:#fff;font-size:12px}
+#quickSeed .qsTotalCard,#quickSeed .qsSmallCard{border:1px solid #9db8f8;border-radius:12px;background:color-mix(in srgb,var(--accent),black 12%);padding:16px;color:#fff}
+#quickSeed .qsTotalCard>strong{font-size:13px}
+#quickSeed .qsTotalNumber{font-size:clamp(32px,6vw,44px);font-weight:900;line-height:1.2;margin:18px 0 7px;overflow-wrap:anywhere}
+#quickSeed .qsLb{font-size:13px;color:#e0eaff}
+#quickSeed .qsSmallCards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:12px}
+#quickSeed .qsSmallCard>span{font-size:13px}
+#quickSeed .qsSmallNumber{font-size:clamp(20px,4vw,26px);font-weight:800;margin:10px 0 3px;overflow-wrap:anywhere}
+#quickSeed .qsGrossCard{grid-column:1/-1}
+#quickSeed .qsDisclosure{background:var(--panel);border:1px solid var(--edge);border-radius:12px;padding:0;margin:12px 0;overflow:hidden}
+#quickSeed .qsDisclosure>summary{padding:17px 15px;font-weight:700;font-size:13px;list-style:none;display:flex;justify-content:space-between;align-items:center;color:var(--fg)}
+#quickSeed .qsDisclosure>summary::-webkit-details-marker{display:none}
+#quickSeed .qsDisclosure>summary::after{content:"⌄";font-size:16px}
+#quickSeed .qsDisclosure[open]>summary::after{content:"⌃"}
+#quickSeed #qsBreakdown,#quickSeed #qsGuide{padding:4px 14px 16px}
+#quickSeed #qsGuide .guideStep{padding:13px 0;border-bottom:1px solid var(--edge)}
+#quickSeed #qsGuide .guideMath{white-space:pre-line;overflow-wrap:anywhere;background:var(--bg);padding:12px;border-radius:9px;font:500 13px/1.65 ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--fg);margin-top:8px}
+#quickSeed .qsError{color:#fff;background:#8b1e2b;border-radius:8px;padding:10px;margin-top:12px}
+#quickSeed [hidden]{display:none!important}
+@media(max-width:540px){
+ #quickSeed .qsPanel{padding:13px}
+ #quickSeed .qsPackRow{grid-template-columns:minmax(0,1fr) minmax(0,2fr);gap:7px}
+ #quickSeed .qsUnitTitle{font-size:14px}
+ #quickSeed .qsUnitButton{font-size:12px;padding:5px 1px;min-height:50px}
+ #quickSeed .qsFields{gap:14px 9px}
+ #quickSeed .qsField{font-size:12px}
+ #quickSeed .qsField input{font-size:16px;padding:10px;min-height:50px}
+ #quickSeed .qsExamples{font-size:10px}
+ #quickSeed .qsSmallCards{gap:8px}
+ #quickSeed .qsTotalCard,#quickSeed .qsSmallCard{padding:12px}
+}
+
+/* Build 13: short, readable result explanations */
+#quickSeed .qsMeaning{font-size:12px;line-height:1.45;color:#e1eaff;margin:10px 0 0;font-weight:400}
+#quickSeed .qsTotalCard .qsMeaning{max-width:650px}
+#quickSeed .qsField input{caret-color:#fff}
+
+/* Build 14: grouped order breakdown and explained calculation steps */
+#quickSeed .qsBreakHeading{font-size:14px;font-weight:800;color:var(--fg);margin:18px 0 8px;padding-bottom:7px;border-bottom:1px solid var(--edge)}
+#quickSeed .qsBreakHeading:first-child{margin-top:8px}
+#quickSeed .qsStepMeaning{font-size:13px;line-height:1.55;color:var(--fg);margin:7px 0 10px;opacity:.85}
+#quickSeed #qsBreakdown .detailrow{gap:10px;align-items:flex-start}
+#quickSeed #qsBreakdown .detailrow strong{text-align:right;overflow-wrap:anywhere}
+
+/* Build 15: Pack All below Results, before Calculation Breakdown */
+#quickSeed .qsPackAllPanel{margin-top:14px}
+#quickSeed .qsPackAllIntro{font-size:13px;line-height:1.5;opacity:.88;margin:7px 0 14px}
+#quickSeed .qsAvailableField{max-width:480px;margin-bottom:10px}
+#quickSeed .qsPackAllOutputs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:15px}
+#quickSeed .qsPackAllHero{grid-column:1/-1;background:rgba(0,0,0,.24);border-radius:12px;padding:17px;text-align:center;display:flex;flex-direction:column;gap:7px}
+#quickSeed .qsPackAllHero>span:first-child{font-size:12px;font-weight:800;letter-spacing:.04em}
+#quickSeed .qsPackAllEa{font-size:clamp(28px,5vw,44px);font-weight:900;line-height:1.2}
+#quickSeed .qsPackAllStatus{font-size:13px;opacity:.9}
+#quickSeed .qsPackAllMini{background:rgba(0,0,0,.18);border-radius:10px;padding:13px;display:flex;flex-direction:column;gap:7px;min-width:0}
+#quickSeed .qsPackAllMini>span{font-size:12px;font-weight:700}
+#quickSeed .qsPackAllMini>strong{font-size:clamp(16px,2.5vw,22px);overflow-wrap:anywhere}
+#quickSeed .qsPackAllMini>small{font-size:11px;opacity:.85;line-height:1.4}
+@media(max-width:540px){#quickSeed .qsPackAllOutputs{grid-template-columns:1fr}#quickSeed .qsPackAllMini{padding:12px}}
